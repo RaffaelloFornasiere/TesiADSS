@@ -13,8 +13,8 @@ class BinHeapNode
 {
     //BinHeapNode& operator=(const BinHeapNode& b) {this->item = }
 public:
-    BinHeapNode(T item = T(), K key = K()):item(item), key(key) {}
-
+    BinHeapNode(T item = T(), K key = K()):item(item), key(key) {/*std::cout << "BinHeapNode constructor" << std::endl;*/}
+    ~BinHeapNode(){/*std::cout << "BinHeapNode destructor" << std::endl;*/}
     K getKey() const {return key;}
     void setKey(const K &value) {key = value;}
 
@@ -81,8 +81,6 @@ template<class T, class K>
 std::pair<T,K> BinHeap<T,K>::Pop()
 {
     BinHeapNode<T,K> aux = *vect.front();
-    if(vect.front())
-        delete vect.front();
 
     vect.front() = vect.back();
     vect.pop_back();
