@@ -1,0 +1,106 @@
+----------------------------------------------------------------------
+entity randomcircuit is
+	port (
+		in0		: in  std_logic;
+		in1		: in  std_logic;
+		in2		: in  std_logic;
+		in3		: in  std_logic;
+		in4		: in  std_logic;
+		in5		: in  std_logic;
+		in6		: in  std_logic;
+		out0		: out std_logic
+	);
+end randomcircuit;
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+architecture struct of randomcircuit is
+	signal net_0		: std_logic;
+	signal net_1		: std_logic;
+	signal net_2		: std_logic;
+	signal net_3		: std_logic;
+	signal net_4		: std_logic;
+	signal net_5		: std_logic;
+	signal net_6		: std_logic;
+	signal net_7		: std_logic;
+	signal net_8		: std_logic;
+	signal net_9		: std_logic;
+	signal net_10		: std_logic;
+	signal net_11		: std_logic;
+	signal net_12		: std_logic;
+	signal net_13		: std_logic;
+	signal net_14		: std_logic;
+	signal net_15		: std_logic;
+	signal net_16		: std_logic;
+	signal net_17		: std_logic;
+	signal net_18		: std_logic;
+	signal net_19		: std_logic;
+	signal net_20		: std_logic;
+	signal net_21		: std_logic;
+	signal net_22		: std_logic;
+	signal net_23		: std_logic;
+	signal net_24		: std_logic;
+	signal net_25		: std_logic;
+	signal net_26		: std_logic;
+	signal net_27		: std_logic;
+	signal net_28		: std_logic;
+	signal net_29		: std_logic;
+	signal net_30		: std_logic;
+	signal net_31		: std_logic;
+	signal net_32		: std_logic;
+	signal net_33		: std_logic;
+	signal net_34		: std_logic;
+	signal net_35		: std_logic;
+	signal net_36		: std_logic;
+	signal net_37		: std_logic;
+	signal net_38		: std_logic;
+	signal net_39		: std_logic;
+	signal net_40		: std_logic;
+	signal net_41		: std_logic;
+	signal net_42		: std_logic;
+begin
+	net_36 <= in0;
+	net_37 <= in1;
+	net_38 <= in2;
+	net_39 <= in3;
+	net_40 <= in4;
+	net_41 <= in5;
+	net_42 <= in6;
+	U42 : OR2 port map(A1 => net_42, A2 => net_41, Z => net_26);
+	U43 : XOR3 port map(A1 => net_40, A2 => net_37, A3 => net_36, Z => net_27);
+	U44 : XOR2 port map(A1 => net_36, A2 => net_38, Z => net_28);
+	U45 : NAND3 port map(A1 => net_42, A2 => net_39, A3 => net_41, Z => net_29);
+	U46 : NOR2 port map(A1 => net_39, A2 => net_40, Z => net_30);
+	U47 : NOT1 port map(A1 => net_38, Z => net_31);
+	U48 : NOR3 port map(A1 => net_40, A2 => net_37, A3 => net_38, Z => net_32);
+	U49 : OR2 port map(A1 => net_36, A2 => net_40, Z => net_33);
+	U50 : XNOR2 port map(A1 => net_41, A2 => net_41, Z => net_34);
+	U51 : NOT1 port map(A1 => net_36, Z => net_35);
+	U32 : OR4 port map(A1 => net_29, A2 => net_32, A3 => net_32, A4 => net_40, Z => net_17);
+	U33 : OR2 port map(A1 => net_40, A2 => net_38, Z => net_18);
+	U34 : OR3 port map(A1 => net_31, A2 => net_32, A3 => net_34, Z => net_19);
+	U35 : XOR2 port map(A1 => net_37, A2 => net_39, Z => net_20);
+	U36 : NOR4 port map(A1 => net_38, A2 => net_31, A3 => net_36, A4 => net_39, Z => net_21);
+	U37 : NAND4 port map(A1 => net_32, A2 => net_34, A3 => net_36, A4 => net_41, Z => net_22);
+	U38 : NOR2 port map(A1 => net_27, A2 => net_42, Z => net_23);
+	U39 : OR2 port map(A1 => net_29, A2 => net_33, Z => net_24);
+	U41 : NOT1 port map(A1 => net_36, Z => net_25);
+	U22 : XOR2 port map(A1 => net_17, A2 => net_22, Z => net_9);
+	U23 : OR3 port map(A1 => net_30, A2 => net_37, A3 => net_41, Z => net_10);
+	U24 : NOR4 port map(A1 => net_21, A2 => net_19, A3 => net_32, A4 => net_25, Z => net_11);
+	U25 : NOR4 port map(A1 => net_39, A2 => net_39, A3 => net_29, A4 => net_29, Z => net_12);
+	U26 : NAND2 port map(A1 => net_28, A2 => net_18, Z => net_13);
+	U27 : NOR2 port map(A1 => net_23, A2 => net_31, Z => net_14);
+	U28 : AND2 port map(A1 => net_25, A2 => net_39, Z => net_15);
+	U29 : NOT1 port map(A1 => net_19, Z => net_16);
+	U12 : NAND3 port map(A1 => net_26, A2 => net_35, A3 => net_14, Z => net_3);
+	U13 : NOT1 port map(A1 => net_12, Z => net_4);
+	U14 : NOR3 port map(A1 => net_14, A2 => net_16, A3 => net_20, Z => net_5);
+	U16 : OR4 port map(A1 => net_15, A2 => net_18, A3 => net_24, A4 => net_12, Z => net_6);
+	U18 : NOR3 port map(A1 => net_11, A2 => net_13, A3 => net_37, Z => net_7);
+	U19 : AND2 port map(A1 => net_9, A2 => net_10, Z => net_8);
+	U2 : XOR3 port map(A1 => net_4, A2 => net_7, A3 => net_8, Z => net_1);
+	U3 : NAND3 port map(A1 => net_3, A2 => net_5, A3 => net_6, Z => net_2);
+	U1 : AND2 port map(A1 => net_1, A2 => net_2, Z => net_0);
+	out0 <= net_0;
+end struct;
