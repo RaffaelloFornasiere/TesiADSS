@@ -9,7 +9,8 @@
 
 
 #compile files
-.o .gch
+*.o 
+*.gch
 
 #build debug folders
 *build*Qt*Debug
