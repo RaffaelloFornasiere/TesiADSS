@@ -19,8 +19,8 @@ int main()
     {
         n = pow(80, times);
         std::cout << "exec:" << std::setw(10) << n << "\tnodes" << std::endl;
-        Graph<int, double> a;
-        std::vector<GraphNode<int, double>*> items; items.reserve(n);
+        Graph<double> a;
+        std::vector<GraphNode<double>*> items; items.reserve(n);
         for(size_t i = 0; i < n; i++)
         {
             a.adjList.emplace_back(i);

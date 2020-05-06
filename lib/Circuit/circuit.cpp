@@ -24,9 +24,6 @@ Circuit::Circuit(std::vector<std::vector<Cell>> *selection)
 {}
 
 
-
-
-
 void Circuit::AssignRandom()
 {
 

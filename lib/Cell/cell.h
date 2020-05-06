@@ -25,6 +25,7 @@ public:
 };
 
 
+
 class CellTimingInfo
 {
     friend std::istream& operator>>(std::istream& is, CellTimingInfo& c);
@@ -49,6 +50,8 @@ private:
     const static int timeIndex = 2;
 };
 
+
+
 class Cell
 {
     friend std::istream& operator>>(std::istream& is, Cell& c);
@@ -70,11 +73,11 @@ private:
     std::string name;
     //double area;
     //double leakage;
+
     std::vector<Pin> input;
     std::vector<Pin> output;
-    //std::vector<std::string> function;
+
     std::string type;
-    //std::vector<CellTimingInfo> timingInfo;
     std::vector<std::vector<CellTimingInfo>> timingInfo;
 };
 
