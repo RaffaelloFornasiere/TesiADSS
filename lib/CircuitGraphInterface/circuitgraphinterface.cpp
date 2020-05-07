@@ -2,8 +2,5 @@
 
 double CircuitNode::Distance(GraphNode *a)
 {
-    for(GraphNode* n : adj)
-    {
 
-    }
 }

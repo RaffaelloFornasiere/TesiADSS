@@ -65,25 +65,32 @@ std::vector<std::vector<Cell>>::iterator Circuit::searchCellType(std::string typ
     return cellSelection->end();
 }
 
+// p_0_0 <= A(0) and B(0);
 bool Circuit::readInstruction1(std::string line)
 {
     std::string name = "port" + std::to_string(adjList.size());
     adjList.emplace_back(std::make_pair(Cell(name), std::vector<Cell*>()));
+    inputLists.emplace_back(std::make_pair(&adjList.back().first, std::vector<Cell*>()));
 
+    //takes the name of the output
     std::stringstream ss (line);
     ss >> line;
     adjList.back().first.output.emplace_back(line);
 
 
     ss >> line; //skips the <=
-    ss >> line;
 
-    //cerca nella matrice di adiacenza se c'è qualche cella che ha come uscita il nome del pin trovato come ingresso
+    ss >> line;
+    //cerca nella lista di adiacenza se c'è qualche cella che ha come uscita il nome del pin trovato come ingresso
     auto i = searchOutputSingal(line);
+
 
     if(i != adjList.end())
     {
-        //aggiunge alla
+        //aggiunge tale cella alla lista in input di questa cella e
+        inputLists.back().second.push_back(&(*i).first);
+
+        //aggiunge alla lista di tale cella questa cella
         (*i).second.push_back(&adjList.back().first);
     }
     if(!(ss >> adjList.back().first.type))
@@ -113,6 +120,9 @@ bool Circuit::readInstruction1(std::string line)
     i = searchOutputSingal(line);
     if(i != adjList.end())
     {
+        //aggiunge tale cella alla lista in input di questa cella e
+        inputLists.back().second.push_back(&(*i).first);
+
         //aggiunge alla
         (*i).second.push_back(&adjList.back().first);
     }
@@ -129,11 +139,14 @@ bool Circuit::readInstruction2(std::string line)
     // resize del vettore
     std::string name = "port" + std::to_string(adjList.size());
     adjList.emplace_back(std::make_pair(Cell(name), std::vector<Cell*>()));
+    inputLists.emplace_back(std::make_pair(&adjList.back().first, std::vector<Cell*>()));
+
     if(name == "port76")
         std::cout << "";
     auto f = line.find(":");
     auto e = line.find("port");
     adjList.back().first.type = line.substr(f + 1, e - f-1);
+
     if(adjList.back().first.type.find("INV") != std::string::npos)
         adjList.back().first.type = "NOT1";
     else
@@ -177,6 +190,9 @@ bool Circuit::readInstruction2(std::string line)
 #endif
         if(it2 != adjList.end())
         {
+            //aggiunge tale cella alla lista in input di questa cella e
+            inputLists.back().second.push_back(&(*it2).first);
+
             //aggiunge alla
             (*it2).second.push_back(&adjList.back().first);
         }
@@ -214,6 +230,7 @@ bool Circuit::readInstruction3(std::string line)
 {
     std::string name = "port" + std::to_string(adjList.size());
     adjList.emplace_back(std::make_pair(Cell(name), std::vector<Cell*>()));
+    inputLists.emplace_back(std::make_pair(&adjList.back().first, std::vector<Cell*>()));
 
 
     std::string outName = line.substr(0, line.find("<="));
@@ -231,6 +248,9 @@ bool Circuit::readInstruction3(std::string line)
     auto i = searchOutputSingal(line);
     if(i != adjList.end())
     {
+        //aggiunge tale cella alla lista in input di questa cella e
+        inputLists.back().second.push_back(&(*i).first);
+
         //aggiunge alla
         (*i).second.push_back(&adjList.back().first);
     }

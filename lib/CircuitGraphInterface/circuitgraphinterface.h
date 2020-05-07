@@ -2,11 +2,15 @@
 #define CIRCUITGRAPHINTERFACE_H
 #include "../Graph/graph.h"
 #include <unordered_map>
+#include <iostream>
 #include "../Circuit/circuit.h"
+
+
 
 class CircuitGraphInterface;
 
-enum class Param {CellRise, CellFall, FallTransition, RiseTransition};
+enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
+
 
 class CircuitNode : public GraphNode<double>
 {
@@ -39,7 +43,6 @@ class InputCircuitNode : public CircuitNode
     double GetRiseTransit(double tIn, double outCap) override;
 
     double Distance(GraphNode* a) override;
-
 private:
 };
 
@@ -50,10 +53,15 @@ class CircuitGraphInterface
 public:
     CircuitGraphInterface();
 
-    double GetTimingParam(CircuitNode*, Param p);
+    double GetTimingParam(CircuitNode*, ParamType p);
+
+    void Setup(); // for each cell, updates the output capacitance
+    void CellSetup(Cell*); // update out cap for a signle cell
 
 private:
-    std::unordered_map<CircuitNode*, std::pair<Cell*, int>>  a;
+    std::unordered_map<CircuitNode*, std::pair<Cell*, int>>  map1;
+    std::unordered_map<Cell*, std::vector<CircuitNode*>> map2;
+
     Circuit* c;
 };
 

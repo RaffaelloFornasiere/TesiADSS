@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "../../../lib/Circuit/circuit.h"
+
 #include <queue>
 #include <time.h>
 
@@ -13,15 +14,15 @@ int main()
     // -----------------------------------------------------------------------------------------------------------------------------------
 
     srand(time(nullptr));
-    std::ifstream inFile ("../../InputFiles/my_cell_library.txt", std::ios_base::out|std::ios_base::binary);
+    std::ifstream inFile ("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs", std::ios_base::in|std::ios_base::binary);
     if(!inFile)
         throw std::invalid_argument("file librerie inesistente");
 
-    std::ifstream inFile2 ("../InputFiles/rc.029.vhdl", std::ios_base::out|std::ios_base::binary);
+    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.026.vhdl", std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
         throw std::invalid_argument("file del circuito inesistente2");
 
-    std::ofstream outFile("../../GraphViewer/GraphViewer/output-adiacenza.txt", std::ios_base::out|std::ios_base::binary);
+    std::ofstream outFile("../../../files/output-adiacenza.txt", std::ios_base::out|std::ios_base::binary);
 
     Cell auxCell;
     std::vector<Cell> cells;

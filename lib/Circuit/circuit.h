@@ -28,6 +28,7 @@ public:
 
 private:
     std::list<std::pair<Cell, std::vector<Cell*>>> adjList;
+    std::vector<std::pair<Cell*, std::vector<Cell*>>> inputLists;
     std::vector<std::vector<Cell>>* cellSelection;
 
     bool readInstruction1(std::string line);
