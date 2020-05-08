@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <memory>
 
 template<class T, class K> class BinHeap;
 
@@ -35,14 +36,15 @@ public:
     BinHeap(int reserve = 10, const std::function<bool(K, K)>& compare = [](K k1, K k2){return k1 > k2;});
 
     std::pair<T,K> Pop();
-    bool DecreaseKey(BinHeapNode<T,K>* n, K newKey);
-    bool IncreaseKey(BinHeapNode<T,K>* n, K newKey);
+    bool DecreaseKey(std::unique_ptr<BinHeapNode<T,K>>& n, K newKey);
+    bool IncreaseKey(std::unique_ptr<BinHeapNode<T,K>>& n, K newKey);
     //bool ChangeKey(BinHeapNode<T,K>* n, K newKey);
     std::pair<T,K> Front();
-    void DeleteElement(BinHeapNode<T,K>* n);
-    BinHeapNode<T,K>* Push(T item, K key);
+    void DeleteElement(std::unique_ptr<BinHeapNode<T,K>>& n);
+    std::unique_ptr<BinHeapNode<T,K>>& Push(T item, K key);
+
     bool Empty() const {return vect.size() == 0;}
-    bool Contains(BinHeapNode<T,K>* n) {return pos.end() != pos.find(n);}
+    bool Contains(std::unique_ptr<BinHeapNode<T,K>>& n) {return pos.end() != pos.find(n);}
 
     void SetCompare(const std::function<bool(K, K)> &value);
 
@@ -63,8 +65,8 @@ private:
     bool Comparator();
     std::function<bool(K, K)> compare;
 
-    std::unordered_map<BinHeapNode<T,K>*, int> pos;
-    std::vector<BinHeapNode<T,K>*> vect;
+    std::unordered_map<std::unique_ptr<BinHeapNode<T,K>>&, int> pos;
+    std::vector<std::unique_ptr<BinHeapNode<T,K>>&> vect;
 };
 #endif // BINARYHEAP_H
 
@@ -92,7 +94,7 @@ std::pair<T,K> BinHeap<T,K>::Pop()
 
 
 template<class T, class K>
-BinHeapNode<T, K> *BinHeap<T, K>::Push(T item, K key)
+std::unique_ptr<BinHeapNode<T,K>>& BinHeap<T, K>::Push(T item, K key)
 {
     vect.emplace_back(new BinHeapNode<T,K>(item, key));
     int i = vect.size()-1;
@@ -135,7 +137,7 @@ void BinHeap<T,K>::SetCompare(const std::function<bool (K, K)> &value)
 }
 
 template<class T, class K>
-bool BinHeap<T,K>::DecreaseKey(BinHeapNode<T,K> *n, K newKey)
+bool BinHeap<T,K>::DecreaseKey(std::unique_ptr<BinHeapNode<T,K>>& n, K newKey)
 {
     auto it = pos.begin();
     if((it = pos.find(n)) == pos.end())
@@ -153,7 +155,7 @@ bool BinHeap<T,K>::DecreaseKey(BinHeapNode<T,K> *n, K newKey)
 }
 
 template<class T, class K>
-bool BinHeap<T,K>::IncreaseKey(BinHeapNode<T, K> *n, K newKey)
+bool BinHeap<T,K>::IncreaseKey(std::unique_ptr<BinHeapNode<T,K>>& n, K newKey)
 {
     auto it = pos.begin();
     if((it = pos.find(n)) == pos.end())
@@ -170,18 +172,6 @@ bool BinHeap<T,K>::IncreaseKey(BinHeapNode<T, K> *n, K newKey)
     return 1;
 }
 
-//template<class T, class K>
-//bool BinHeap<T,K>::ChangeKey(BinHeapNode<T, K> *n, K newKey)
-//{
-//    if(n && compare(n->key, newKey) )
-//        return DecreaseKey(n, abs(n->key - newKey));
-//    else if (n && n->key < newKey)
-//        return IncreaseKey(n, abs(newKey - n->key));
-
-//    return false;
-
-//}
-
 template<class T, class K>
 std::pair<T, K> BinHeap<T,K>::Front()
 {
@@ -189,7 +179,7 @@ std::pair<T, K> BinHeap<T,K>::Front()
 }
 
 template<class T, class K>
-void BinHeap<T,K>::DeleteElement(BinHeapNode<T, K> *n)
+void BinHeap<T,K>::DeleteElement(std::unique_ptr<BinHeapNode<T, K>>& n)
 {
     DecreaseKey(n, vect[0].key+1);
     Pop();

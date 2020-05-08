@@ -20,6 +20,7 @@ public:
     virtual M Distance(GraphNode* a) {return adj.size();}
     void AddNeighbor(GraphNode* a){adj.push_back(a);}
 
+
 private:
     BinHeapNode<GraphNode*, M>* heapPtr;
     //M item;
@@ -40,11 +41,12 @@ public:
     virtual void AddNode(GraphNode<M>*a) {adjList.push_back(a);}
     virtual void DeleteNode(int i);
 
+    size_t NumNodes()const {return adjList.size();}
     GraphNode<M>* getNode(int node);
 
 public:  
     //virtual M Distance(GraphNode<T,M> n1, GraphNode<T,M> n2);
-    std::list<GraphNode<M>*> adjList;
+    std::vector<GraphNode<M>*> adjList;
     std::vector<GraphNode<M>*> sorted;
 };
 #endif // GRAPH_H
@@ -117,23 +119,24 @@ M Graph<M>::getWorstPathDistance()
 template<class M>
 void Graph<M>::DeleteNode(int node)
 {
-    auto it = adjList.begin();
-    for(int i = 0; i < node; i++)
+    auto it = adjList.begin() + node;
+    /*for(int i = 0; i < node; i++)
     {
         it++;
     }
-    delete *it;
+    delete *it;*/
+    sorted.erase(sorted.begin()+node);
     adjList.erase(it);
 }
 
 template<class M>
 GraphNode<M> *Graph<M>::getNode(int node)
 {
-    auto it = adjList.begin();
-    for(int i = 0; i < node; i++)
+    auto it = adjList.begin() + node;
+    /*for(int i = 0; i < node; i++)
     {
         it++;
-    }
+    }*/
     return *it;
 }
 
