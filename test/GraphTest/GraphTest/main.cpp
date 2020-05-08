@@ -7,6 +7,83 @@
 #include <iomanip>
 #include <cmath>
 
+
+
+class MyNode : public GraphNode<double>
+{
+public:
+    MyNode(int i) : i (i) {}
+    int i;
+};
+
+class MyGraph : public Graph<double>
+{
+public:
+    MyGraph(size_t n, std::ostream& os);
+private:
+
+};
+
+
+MyGraph::MyGraph(size_t n_i, std::ostream &os)
+{
+    for(int times = 1; times < 5; times++)
+    {
+        size_t n = pow(n_i, times);
+        std::cout << "exec:" << std::setw(10) << n << "\tnodes" << std::endl;
+        //std::vector<MyNode*> items; items.reserve(n);
+        for(size_t i = 0; i < n; i++)
+        {
+            AddNode(new MyNode(i));
+        }
+
+        size_t j = 0;
+        for(auto& i : adjList)
+        {
+            //std::cout << "\"" << j << "\"";
+            //os  << "\"" << j << "\"";
+            if(j != n-1)
+            for(size_t k = 0; k < n/2; k++)
+            {
+
+                size_t r = rand()%100;
+                //size_t ref = 90 - double(j)/(n-1)*70;
+                if(rand()%100 > (90 - double(j)/(n-1)*50))
+                    break;
+
+                if(j < n-1)
+                    r = rand()%(n-j-1) + j+1;
+
+                i->AddNeighbor(getNode(r));
+
+
+                //std::cout << "->\"" << r <<"\"";
+                //os << "->\"" << r <<"\"";
+
+            }
+            //std::cout <<std::endl;
+            //os << std::endl;
+            j++;
+        }
+
+        std::cout << "topological sort:" << std::endl;
+
+        time_t start = clock();
+        TopologicalSort();
+
+        std::cout << "\t\tsorted:" << std::setw(29) << n << " nodes in:" << std::setw(6) << clock()-start << " ms" << std::endl;
+
+        start = clock();
+        double f = getWorstPathDistance();
+
+        std::cout << "\t\tcomputed worst path among:" << std::setw(10) << n << " nodes in:" << std::setw(6) << clock()-start << " ms" << std::endl;
+        std::cout << "\t\tworst path costs:"<< std::setw(19) << f << std::endl<< std::endl;
+    }
+}
+
+
+
+
 int main()
 {
     size_t n = 10;
@@ -14,56 +91,8 @@ int main()
     srand(time(nullptr));
     std::ofstream outFile("../../../files/output-adiacenza.txt", std::ios_base::out|std::ios_base::binary );
 
-    //bool a = 1;
-    for(int times = 1; times < 4; times++)
-    {
-        n = pow(80, times);
-        std::cout << "exec:" << std::setw(10) << n << "\tnodes" << std::endl;
-        Graph<double> a;
-        std::vector<GraphNode<double>*> items; items.reserve(n);
-        for(size_t i = 0; i < n; i++)
-        {
-            a.adjList.emplace_back(i);
-            items.push_back(&a.adjList.back());
-        }
-
-        //std::cout << "init nodes" << std::endl;
-
-        size_t j = 0;
-        for(auto& i : a.adjList)
-        {
-            //std::cout << "\"" << j << "\"";
-            //outFile  << "\"" << j << "\"";
-            for(size_t k = 0; k < n/2; k++)
-            {
-                if((rand()%100) > 90 - j/(n-1)*85)
-                    break;
-                int r = 0;
-                if(j <n-1)
-                    r = rand()%(n-j-1) + j+1;
-                i.adj.push_back(items[r]);
-                //std::cout << "->\"" << r <<"\"";
-                //outFile << "->\"" << r <<"\"";
-
-            }
-            //std::cout <<std::endl;
-            //outFile << std::endl;
-            j++;
-
-        }
-        std::cout << "topological sort:" << std::endl;
-
-        time_t start = clock();
-        a.TopologicalSort();
-
-        std::cout << "\t\tsorted:" << std::setw(29) << n << " nodes in:" << std::setw(6) << clock()-start << " ms" << std::endl;
-
-        start = clock();
-        double f = a.getWorstPathDistance();
-
-        std::cout << "\t\tcomputed worst path among:" << std::setw(10) << n << " nodes in:" << std::setw(6) << clock()-start << " ms" << std::endl;
-        std::cout << "\t\tworst path costs:"<< std::setw(19) << f << std::endl<< std::endl;
-    }
+    MyGraph mg (n, outFile);
 
     return 0;
 }
+

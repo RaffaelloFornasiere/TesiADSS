@@ -80,12 +80,13 @@ BinHeap<T,K>::BinHeap(int reserve, const std::function<bool(K, K)>& compare)
 template<class T, class K>
 std::pair<T,K> BinHeap<T,K>::Pop()
 {
-    BinHeapNode<T,K> aux = *vect.front();
-
+    std::pair<T,K> res = std::make_pair(vect.front()->item, vect.front()->key);
+    BinHeapNode<T,K>* ptr = vect.front();
     vect.front() = vect.back();
+    delete ptr;
     vect.pop_back();
     Heapify(0);
-    return std::make_pair(aux.item, aux.key);
+    return res;
 }
 
 
