@@ -32,15 +32,17 @@ class CellTimingInfo
     friend std::ostream& operator<<(std::ostream& os, CellTimingInfo& c);
 
 public:
-    CellTimingInfo(std::string infoType = ""): infoType(infoType) {}
-    double GetDelay(double inputTransition, double outCapacitance);
+    CellTimingInfo(std::string infoType = "") : infoType(infoType) {}
+    double GetDelay (double inputTransition, double outCapacitance) const;
 
 
     void setInfoType(const std::string &value){infoType = value;}
-    std::string getInfoType() const{return infoType;}
+    std::string getInfoType() const {return infoType;}
+
+    void Test();
 
 private:
-    double ApproxTransition(double transition);
+    double ApproxTransition(double transition) const;
 
     std::string infoType;
     std::vector<std::vector<double>> values;
@@ -56,6 +58,8 @@ class Cell
 {
     friend std::istream& operator>>(std::istream& is, Cell& c);
     friend std::ostream& operator<<(std::ostream& os, const Cell& c);
+    //bool operator=(const Cell& c2);
+
     friend class Circuit;
 
 public:
@@ -68,6 +72,24 @@ public:
 
     std::string getType() const{return type;}
     void setType(const std::string &value){type = value;}
+
+    double GetInPinCapacity(int i) const {return input[i].capacity;}
+    double GetOutPinCapacity(int i) const {return  output[i].capacity;}
+
+    size_t GetNumOfInputs() const {return input.size();}
+    size_t GetNumOfOutputs() const {return output.size();}
+
+    std::string GetInputName(int i) const {return input[i].name;}
+    std::string GetOutputName(int i) const {return output[i].name;}
+
+
+    double GetTimingInfo(double intransit, double outCap, size_t output, size_t type) const;
+    static const size_t cell_fall = 0;
+    static const size_t cell_rise = 1;
+    static const size_t fall_transition = 2;
+    static const size_t rise_transition = 3;
+
+//    std::vector<std::vector<CellTimingInfo>> timingInfo;
 
 private:
     std::string name;

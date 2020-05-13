@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <unordered_set>
+#include <iostream>
 
 template <class M > class Graph;
 
@@ -11,17 +12,26 @@ template <class M>
 class GraphNode
 {
     friend bool operator==(const GraphNode& a, const GraphNode& b) { return a.item == b.item; }
+
+    template<class N>
+    friend std::ostream& operator<<(std::ostream& os, const GraphNode<N>& gn);
+
     friend class Graph<M>;
 
 public:
-    GraphNode(){/*std::cout << "GraphNode constructor" << std::endl;*/}
+    GraphNode(std::string name = ""):name(name){/*std::cout << "GraphNode constructor" << std::endl;*/}
     virtual ~GraphNode(){/*std::cout << "GraphNode destructor" << std::endl;*/}
 
     virtual M Distance(GraphNode* a) {return adj.size();}
-    void AddNeighbor(GraphNode* a){adj.push_back(a);}
+
+    std::string getName() const {return name;}
+
+    virtual void AddNeighbor(GraphNode* a){adj.push_back(a);}
 
 
-private:
+
+protected:
+    std::string name;
     BinHeapNode<GraphNode*, M>* heapPtr;
     //M item;
     std::vector<GraphNode*> adj;
@@ -31,6 +41,8 @@ private:
 template <class M>
 class Graph
 {
+    template<class N>
+    friend std::ostream& operator<<(std::ostream& os, const Graph<N>& g);
 
 public:
     Graph(){}
@@ -44,13 +56,21 @@ public:
     size_t NumNodes()const {return adjList.size();}
     GraphNode<M>* getNode(int node);
 
-public:  
+protected:
     //virtual M Distance(GraphNode<T,M> n1, GraphNode<T,M> n2);
     std::vector<GraphNode<M>*> adjList;
     std::vector<GraphNode<M>*> sorted;
 };
-#endif // GRAPH_H
 
+template<class M>
+std::ostream& operator<<(std::ostream &os, const Graph<M> &g)
+{
+    for(size_t i = 0; i < g.adjList.size(); i++)
+    {
+        os << *g.adjList[i] << '\n';
+    }
+    return os;
+}
 
 template<class M>
 void Graph<M>::TopologicalSort()
@@ -139,5 +159,17 @@ GraphNode<M> *Graph<M>::getNode(int node)
     }*/
     return *it;
 }
+
+
+
+template<class N>
+std::ostream& operator<<(std::ostream &os, const GraphNode<N> &gn)
+{
+    os << "\"" << gn.name << "\"";
+    for(GraphNode<N>* i : gn.adj)
+        os << "->\"" << i->name << "\"";
+    return  os;
+}
+#endif // GRAPH_H
 
 

@@ -26,9 +26,19 @@ public:
     double GetWorstCase();
     void AssignRandom();
 
+    size_t GetNumOfCells() const {return adjList.size();}
+    const Cell* GetCell(int i) const {return inputLists[i].first;}
+    std::vector<const Cell*> GetInputsOfCell(int cell) const {std::vector<const Cell*> aux; for(auto i : inputLists[cell].second)aux.push_back(i); return aux;}
+    std::vector<const Cell*> GetInputsOfCell(const Cell* cell) const;
+    std::vector<const Cell*> GetOutputsOfCell(int cell) const;
+    std::vector<const Cell*> GetOutputsOfCell(const Cell* c) const;
+
+    void ChangeCell(const Cell *c) const;
+
 private:
-    std::list<std::pair<Cell, std::vector<Cell*>>> adjList;
+    mutable std::list<std::pair<Cell, std::vector<Cell*>>> adjList;
     std::vector<std::pair<Cell*, std::vector<Cell*>>> inputLists;
+
     std::vector<std::vector<Cell>>* cellSelection;
 
     bool readInstruction1(std::string line);

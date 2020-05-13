@@ -106,7 +106,8 @@ std::istream& operator>>(std::istream &is, CellTimingInfo& c)
         return is;
     }
     c.infoType = *maches.begin();
-
+    int n = c.infoType.find(" ");
+    c.infoType.erase(n, c.infoType.size()-n);
 
     if(!std::getline(is>>std::ws, aux) &&
             aux.find("input_net_transition total_output_net_capacitance time") == std::string::npos)
@@ -156,7 +157,7 @@ std::ostream& operator<<(std::ostream &os, CellTimingInfo &c)
     return os;
 }
 
-double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance)
+double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) const
 {
     //find the range of capacitange according to the input transition
     struct Comp
@@ -165,6 +166,7 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance)
         bool operator() (double val,  const std::vector<double> v) const { return v[CellTimingInfo::inTransitIndex] > val; }
     };
     inputTransition = ApproxTransition(inputTransition);
+
     auto p = std::equal_range(values.begin(), values.end(), inputTransition, Comp{});
 
 
@@ -175,10 +177,10 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance)
 
 
     //find the two iterators that describes the entries of the matrix among which should stay the out capacitance
-    std::vector<std::vector<double>>::iterator it = p.first;
+    auto it = p.first;
     double prevCap = 0, succCap = 0;
     double prevT = 0, succT = 0;
-    p.second--;
+    //p.second--;
     while((*it)[outCapIndex] < outCapacitance && it != p.second) it++;
     if(it != values.begin())
     {
@@ -187,7 +189,7 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance)
         prevCap = (*it)[outCapIndex];
         prevT = (*it)[timeIndex];
     }
-    it = p.second;
+    it = --p.second;
     while((*it)[outCapIndex] > outCapacitance && it != p.first) it--;
 
     if(it != --values.end())
@@ -202,11 +204,22 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance)
             (outCapacitance - prevCap)/(prevCap-succCap)*succT;
 }
 
+//void CellTimingInfo::Test()
+//{
+//    std::pair<double, double> tester{0,0.78};
+//    double res = GetDelay(tester.first, tester.second);
+//    std::cout << res;
+//    return;
+//}
 
 
-double CellTimingInfo::ApproxTransition(double transition)
+
+double CellTimingInfo::ApproxTransition(double transition) const
 {
     // approx the input transition time to the values of of this cell
+
+    if(transition == 0)
+        return values[0][inTransitIndex];
 
     double k = 1;
     double auxk = 1;
@@ -276,9 +289,12 @@ std::ostream& operator<<(std::ostream &os, Pin &p)
 
 
 
+double Cell::GetTimingInfo(double intransit, double outCap, size_t output, size_t infoType) const
+{
+    if(name == "HS_CKINVX55")
+            std::cout << " aa";
+    if(this->type != "void")
+        return timingInfo[output][infoType].GetDelay(intransit, outCap);
 
-
-
-
-
-
+    return 0;
+}

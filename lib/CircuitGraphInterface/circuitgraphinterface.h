@@ -7,62 +7,104 @@
 
 
 
-class CircuitGraphInterface;
+class CircuitGraph;
 
 enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
 
 
 class CircuitNode : public GraphNode<double>
 {
-public:
-    virtual double GetInputPinCap() = 0;
-    virtual double GetOutputPinCap() = 0;
-    virtual double GetCellFall(double tIn, double outCap) = 0;
-    virtual double GetCellRise(double tIn, double outCap) = 0;
-    virtual double GetFallTransit(double tIn, double outCap) = 0;
-    virtual double GetRiseTransit(double tIn, double outCap) = 0 ;
 
+public:
+    CircuitNode(CircuitGraph* it, int capacity);
+    CircuitNode(CircuitGraph* it, std::string name) : GraphNode<double>(name), it(it) {worstInRTransit = 0; worstOutRTransit = 0;}
+    virtual ~CircuitNode(){}
     virtual double Distance(GraphNode* a) override;
-    virtual void PassFallTransit();
-    virtual void PassRiseTransit();
+
+
+    std::string getName() const {return name;}
+
+    void SetInTransition(double value) {if(value > worstInRTransit) worstInRTransit = value;}
+    void SetCapacity(double value){outCapacity = value;}
+    //void AddNeighbor(GraphNode<double> *a) override;
+    virtual void CalcOutputCap() = 0;
+
+
+    virtual double GetWorstDelay(){return delay;}
+    virtual double GetWorstTransition(){return worstOutRTransit;}
+
+
 
 protected:
-    CircuitGraphInterface* it;
+    CircuitGraph* it;
     double worstInRTransit;
     double worstOutRTransit;
-    double distance;
+    double delay;
+    double outCapacity;
 };
 
 class InputCircuitNode : public CircuitNode
 {
-    double GetInputPinCap() override;
-    double GetOutputPinCap() override {return 0;};
-    double GetCellFall(double tIn, double outCap) override;
-    double GetCellRise(double tIn, double outCap) override;
-    double GetFallTransit(double tIn, double outCap) override;
-    double GetRiseTransit(double tIn, double outCap) override;
+public:
+    InputCircuitNode(CircuitGraph *it, int capacity = 0);
+    InputCircuitNode(CircuitGraph* it, std::string name) : CircuitNode(it, name){}
+    ~InputCircuitNode() {}
 
-    double Distance(GraphNode* a) override;
+    double GetWorstDelay() override;
+    double GetWorstTransition() override;
+
+    void CalcOutputCap() override;
+
+    //double Distance(GraphNode* a) override {return 0;};
 private:
+
+};
+
+
+class OutputCircuitNode : public CircuitNode
+{
+
+public:
+    OutputCircuitNode(CircuitGraph* it, int capacity);
+    OutputCircuitNode(CircuitGraph* it, std::string name):CircuitNode(it, name){}
+    ~OutputCircuitNode(){}
+
+    double GetWorstDelay() override;
+    double GetWorstTransition() override;
+    void CalcOutputCap() override;
+
+    //double Distance(GraphNode* a) override{return 0;};
+private:
+
 };
 
 
 
-class CircuitGraphInterface
+class CircuitGraph : public Graph<double>
 {
-public:
-    CircuitGraphInterface();
+    friend std::ostream& operator<<(std::ostream& os, const CircuitGraph& cg);
+    friend class CircuitNode;
 
+public:
+    CircuitGraph(const Circuit* c);
+    ~CircuitGraph(){}
     double GetTimingParam(CircuitNode*, ParamType p);
 
     void Setup(); // for each cell, updates the output capacitance
     void CellSetup(Cell*); // update out cap for a signle cell
+    void ChangeCell(const Cell* cell) const {circuit->ChangeCell(cell);}
+    std::pair<const Cell*, int> GetCell(CircuitNode* n);
 
 private:
-    std::unordered_map<CircuitNode*, std::pair<Cell*, int>>  map1;
-    std::unordered_map<Cell*, std::vector<CircuitNode*>> map2;
+    void CreateEdges();
 
-    Circuit* c;
+    //Cell {input_1, input_2 ... input_n, output_1 ... output_n}
+    std::unordered_map<CircuitNode*, std::pair<const Cell*, int>>  map1;
+    std::unordered_map<const Cell*, std::vector<CircuitNode*>> map2;
+
+    //void ChangeCell(Cell* cell);
+
+    const Circuit* circuit;
 };
 
 #endif // CIRCUITGRAPHINTERFACE_H

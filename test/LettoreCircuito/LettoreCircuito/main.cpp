@@ -7,22 +7,13 @@
 #include <queue>
 #include <time.h>
 
-int main()
-{
-    // -----------------------------------------------------------------------------------------------------------------------------------
-    //                                                              SETUP
-    // -----------------------------------------------------------------------------------------------------------------------------------
 
+std::vector<std::vector<Cell>> readCellLibrary(std::string filename)
+{
     srand(time(nullptr));
-    std::ifstream inFile ("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs", std::ios_base::in|std::ios_base::binary);
+    std::ifstream inFile (filename, std::ios_base::in|std::ios_base::binary);
     if(!inFile)
         throw std::invalid_argument("file librerie inesistente");
-
-    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.026.vhdl", std::ios_base::in|std::ios_base::binary);
-    if(!inFile2)
-        throw std::invalid_argument("file del circuito inesistente2");
-
-    std::ofstream outFile("../../../files/output-adiacenza.txt", std::ios_base::out|std::ios_base::binary);
 
     Cell auxCell;
     std::vector<Cell> cells;
@@ -58,7 +49,25 @@ int main()
            toPass.push_back(std::vector<Cell>(1, cells.at(i)));
     }
 
-    std::cout << sizeof (cells) <<std::endl;
+    //std::cout << sizeof (cells) <<std::endl;
+    return toPass;
+}
+
+int main()
+{
+    // -----------------------------------------------------------------------------------------------------------------------------------
+    //                                                              SETUP
+    // -----------------------------------------------------------------------------------------------------------------------------------
+
+    srand(time(nullptr));
+
+    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.026.vhdl", std::ios_base::in|std::ios_base::binary);
+    if(!inFile2)
+        throw std::invalid_argument("file del circuito inesistente2");
+
+    std::ofstream outFile("../../../files/output-adiacenza.txt", std::ios_base::out|std::ios_base::binary);
+
+    std::vector<std::vector<Cell>> toPass = readCellLibrary(std::string("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs"));
 
     Circuit c(&toPass);
     inFile2 >> c;
