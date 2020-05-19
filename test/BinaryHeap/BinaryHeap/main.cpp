@@ -22,13 +22,13 @@ public:
 int main()
 {
 
-    int n = 1000000;
-    int k = 10000;
+    int n = 10;
+    int k = 100;
     srand(time(nullptr));
-    for(int i = 2; i < 7; i++)
+    for(int i = 1; i < 2; i++)
     {
         n = pow(10, i);
-        BinHeap<Item, double> heap(n, BinHeap<Item,double>::maxHeap);
+        BinHeap<Item, double> heap(n, BinHeap<Item,double>::minHeap);
         std::vector<double> v; v.reserve(n);
         std::vector<BinHeapNode<Item, double>*> ptrs; ptrs.reserve(n);
 
@@ -45,9 +45,9 @@ int main()
         while(!heap.Empty())
         {
             auto x = heap.Pop();
-            //std::cout << "item:\t" << x.first << "\tkey:\t" << x.second <<std::endl;
+            std::cout << "item:\t" << x.first << "\tkey:\t" << x.second <<std::endl;
         }
-        //std::cout << std::setw(10) << n << std::setw(10) << "b" << std::endl;
+        std::cout << std::setw(10) << n << std::setw(10) << "b" << std::endl;
 
         std::cout<< "sorting: " << std::setw(10) << n <<  std::setw(5) << "\telements in O(nlog(n)) required: " << std::setw(8) <<  clock() - start << " [ms] " << std::endl;
     }

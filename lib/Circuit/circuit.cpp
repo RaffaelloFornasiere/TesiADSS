@@ -43,6 +43,11 @@ void Circuit::AssignRandom()
 
 }
 
+std::vector<const Cell *> Circuit::GetInputsOfCell(int cell) const
+{
+    std::vector<const Cell*> aux; for(auto i : inputLists[cell].second)aux.push_back(i); return aux;
+}
+
 std::vector<const Cell *> Circuit::GetInputsOfCell(const Cell *cell) const
 {
     auto it = std::find_if(inputLists.begin(), inputLists.end(), [=](std::pair<Cell*, std::vector<Cell*>> c){return c.first == cell;});
@@ -80,21 +85,31 @@ std::vector<const Cell *> Circuit::GetOutputsOfCell(const Cell *cell) const
 
 void Circuit::ChangeCell(const Cell *c) const
 {
+    if(c->type == "void")
+        return;
+
     auto it = &std::find_if (adjList.begin(), adjList.end(),
-                            [=](std::pair<Cell, std::vector<Cell*>>& cell)
+                             [=](std::pair<Cell, std::vector<Cell*>>& cell)
     {return &cell.first == c;})->first;
 
-    std::vector<Cell>& it2 = *std::find_if (cellSelection->begin(), cellSelection->end(),
+    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
                              [=](std::vector<Cell>& cells)
     {return cells[0].type == it->type;});
 
-    if((it2.size() != 0) and (it->type != "void"))
+    if(it2 == cellSelection->end())
+        throw std::invalid_argument("no cell found in cell-selection");
+
+    if(it2->size() != 0)
     {
-        size_t rnd = 0;//rand()%it2.size();
-        *it = it2[rnd];
+        size_t rnd = rand()%it2->size();
+        *it = (*it2)[rnd];
     }
-    else if ((it2.size() == 0) xor (it->type == "void"))
-        throw std::logic_error("porta non riconosciuta");
+    else
+    {
+        throw std::logic_error("unknown error");
+    }
+
+
 }
 
 std::list<std::pair<Cell, std::vector<Cell*>>>::iterator Circuit::searchOutputSingal(std::string name)
@@ -172,6 +187,7 @@ bool Circuit::readInstruction1(std::string line)
         return false;
     }
     i = searchOutputSingal(line);
+
     adjList.back().first.input.emplace_back(line);
     if(i != adjList.end())
     {
@@ -196,6 +212,8 @@ bool Circuit::readInstruction2(std::string line)
     adjList.emplace_back(std::make_pair(Cell(name), std::vector<Cell*>()));
     inputLists.emplace_back(std::make_pair(&adjList.back().first, std::vector<Cell*>()));
 
+    if(name == "port251")
+        std::cout << "aa";
 
     auto f = line.find(":");
     auto e = line.find("port");
@@ -325,7 +343,7 @@ std::istream& operator>>(std::istream &is, Circuit &c)
 {
 
     std::string aux;
-    int g = is.tellg();
+    //int g = is.tellg();
 
     while(std::getline(is>>std::ws, aux) && aux.find("begin") == std::string::npos);
 

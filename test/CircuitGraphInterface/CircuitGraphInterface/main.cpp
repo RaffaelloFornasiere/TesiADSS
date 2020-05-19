@@ -50,7 +50,7 @@ std::vector<std::vector<Cell>> readCellLibrary(std::string filename)
             toPass.push_back(std::vector<Cell>(1, cells.at(i)));
     }
 
-    //toPass[0][0].timingInfo[0][0].Test();
+    //toPass[0][0].TestTimingInfo();
 
     //std::cout << sizeof (cells) <<std::endl;
     return toPass;
@@ -64,10 +64,10 @@ int main()
     // -----------------------------------------------------------------------------------------------------------------------------------
     //                                                              SETUP
     // -----------------------------------------------------------------------------------------------------------------------------------
+    time_t start = clock();
+    srand(time(nullptr));
 
-    //srand(time(nullptr));
-
-    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/deco4.vhdl", std::ios_base::in|std::ios_base::binary);
+    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.029.vhdl", std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
         throw std::invalid_argument("file del circuito inesistente2");
 
@@ -77,13 +77,19 @@ int main()
 
     Circuit c(&toPass);
     inFile2 >> c;
-   // outFile << c;
+    outFile << c;
 
     CircuitGraph var (&c);
     var.Setup();
+
     var.TopologicalSort();
-    //double f = var.getWorstPathDistance();
-    //std::cout << f << std::endl;
+
+
+    var.Setup();
+    std::cout << "calcolo delay";
+    double f = var.getWorstPathDistance();
+    std::cout << "fine calcolo. Tempo impiegato: " << clock()-start << " [ms] " << std::endl;
+    std::cout << "delay calcolato: " << f << std::endl;
     //outFile << var;
 
 

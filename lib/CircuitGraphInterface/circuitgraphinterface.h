@@ -6,7 +6,6 @@
 #include "../Circuit/circuit.h"
 
 
-
 class CircuitGraph;
 
 enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
@@ -14,25 +13,26 @@ enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
 
 class CircuitNode : public GraphNode<double>
 {
-
+    //friend std::ostream& operator<<(std::ostream& os, const CircuitNode& cn);
 public:
     CircuitNode(CircuitGraph* it, int capacity);
     CircuitNode(CircuitGraph* it, std::string name) : GraphNode<double>(name), it(it) {worstInRTransit = 0; worstOutRTransit = 0;}
     virtual ~CircuitNode(){}
-    virtual double Distance(GraphNode* a) override;
 
+
+    virtual double Distance(GraphNode* a) override;
 
     std::string getName() const {return name;}
 
     void SetInTransition(double value) {if(value > worstInRTransit) worstInRTransit = value;}
+
     void SetCapacity(double value){outCapacity = value;}
+
     //void AddNeighbor(GraphNode<double> *a) override;
     virtual void CalcOutputCap() = 0;
 
-
-    virtual double GetWorstDelay(){return delay;}
-    virtual double GetWorstTransition(){return worstOutRTransit;}
-
+    virtual double GetWorstDelay() = 0; //{return delay;}
+    virtual double GetWorstTransition() = 0; //{return worstOutRTransit;}
 
 
 protected:
@@ -40,8 +40,12 @@ protected:
     double worstInRTransit;
     double worstOutRTransit;
     double delay;
+
     double outCapacity;
 };
+
+
+
 
 class InputCircuitNode : public CircuitNode
 {
@@ -55,7 +59,6 @@ public:
 
     void CalcOutputCap() override;
 
-    //double Distance(GraphNode* a) override {return 0;};
 private:
 
 };
@@ -73,7 +76,6 @@ public:
     double GetWorstTransition() override;
     void CalcOutputCap() override;
 
-    //double Distance(GraphNode* a) override{return 0;};
 private:
 
 };
@@ -93,7 +95,7 @@ public:
     void Setup(); // for each cell, updates the output capacitance
     void CellSetup(Cell*); // update out cap for a signle cell
     void ChangeCell(const Cell* cell) const {circuit->ChangeCell(cell);}
-    std::pair<const Cell*, int> GetCell(CircuitNode* n);
+    std::pair<const Cell*, int> GetCell(CircuitNode *n) const;
 
 private:
     void CreateEdges();

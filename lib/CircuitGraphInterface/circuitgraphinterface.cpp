@@ -11,16 +11,16 @@ std::ostream& operator<<(std::ostream &os, const CircuitGraph &cg)
         size_t inputs = i.first->GetNumOfInputs();
         if(inputs > 0)
         {
-            //os << "@begin" << std::endl;
+            os << "@begin" << std::endl;
             for(size_t j = 0; j < inputs; j++)
             {
-                os << *i.second[j] << std::endl;
+                os << *i.second[j];// << std::endl;
             }
-            //os << "@end" << std::endl;
+            os << "@end" << std::endl;
         }
         for(size_t j = 0; j < i.first->GetNumOfOutputs(); j++)
         {
-            os << *i.second[inputs+j] << std::endl;
+            os << *i.second[inputs+j]; //<< std::endl;
         }
         //os << std::endl;
     }
@@ -74,8 +74,6 @@ CircuitGraph::CircuitGraph(const Circuit *c)
     }
 
     return;
-    //for each cell
-    //create the edges
 }
 
 void CircuitGraph::Setup()
@@ -92,19 +90,21 @@ void CircuitGraph::Setup()
     return;
 }
 
-std::pair<const Cell *, int> CircuitGraph::GetCell(CircuitNode *n)
+std::pair<const Cell *, int> CircuitGraph::GetCell(CircuitNode *n) const
 {
     auto it = map1.begin();
+    map1.find(n);
+
     if((it = map1.find(n)) == map1.end())
-        throw std::invalid_argument("nessuna corrispondenza");
+       throw std::invalid_argument("nessuna corrispondenza");
+
     auto it2 = *it;
     return it2.second;
-
 }
+
 
 void CircuitGraph::CreateEdges()
 {
-
     for(size_t i = 0; i < circuit->GetNumOfCells(); i++)
     {
         const Cell* aux = circuit->GetCell(i);
@@ -112,21 +112,20 @@ void CircuitGraph::CreateEdges()
 
         for(auto& o : outputs)
         {
-            for(size_t i = 0; i < o->GetNumOfInputs(); i++)
+            for(size_t k = 0; k < o->GetNumOfInputs(); k++)
             {
                 for(size_t j = 0; j < aux->GetNumOfOutputs(); j++)
                 {
-                    if(aux->GetOutputName(j) == o->GetInputName(i))
+                    if(aux->GetOutputName(j) == o->GetInputName(k))
                     {
                         CircuitNode* out    = map2[aux][aux->GetNumOfInputs()+j];
-                        CircuitNode* in     = map2[o][i];
+                        CircuitNode* in     = map2[o][k];
                         out->AddNeighbor(in);
                     }
                 }
             }
         }
     }
-
 }
 
 InputCircuitNode::InputCircuitNode(CircuitGraph* it, int capacity)
@@ -179,14 +178,30 @@ void OutputCircuitNode::CalcOutputCap()
 {
     auto p = it->GetCell(this);
     int index = p.second-p.first->GetNumOfInputs();
+
     outCapacity = p.first->GetOutPinCapacity(index);
     for(auto& i : adj)
     {
-        //CircuitNode* aux = static_cast<CircuitNode*>(i);
         auto p2 = it->GetCell(static_cast<CircuitNode*>(i));
         outCapacity += p2.first->GetInPinCapacity(p2.second);
     }
 }
+
+//std::ostream& operator<<(std::ostream &os, const CircuitNode &cn)
+//{
+//    //os << "\"" << cn.name << "\"";
+//    for(auto i : cn.adj)
+
+//        os << "\"" << cn.name << "\""
+//           << "->\"" << i->getName() << "\""
+
+//           << "|" << cn.outCapacity << "|"
+//           << "|" << cn.outCapacity << "|"
+//           << "|" << cn.outCapacity << "|"
+
+//           << std::endl;
+//    return  os;
+//}
 
 CircuitNode::CircuitNode(CircuitGraph *it, int capacity)
     : it(it), outCapacity(capacity)
@@ -198,7 +213,7 @@ double CircuitNode::Distance(GraphNode *a)
 {
     double worstTransition = GetWorstTransition();
 
-    CircuitNode* aux = static_cast<CircuitNode*>(a);
+    CircuitNode* aux = static_cast<CircuitNode*>(a);  
     aux->SetInTransition(worstTransition);
 
     return GetWorstDelay();

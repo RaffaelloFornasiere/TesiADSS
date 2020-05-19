@@ -650,6 +650,10 @@ begin
 	adder_b <= (net_249 & net_247 & net_245 & net_243 & net_241 & net_239 & net_237 & net_235 & net_233 & net_231 & net_229 & net_227 & net_225 & net_223 & net_221 & net_219);
 	RES(21 downto 6) <= adder_res;
 
+
+end struct;
+----------------------------------------------------------------------
+
 	MADD : adder16
 		port map (
 			a	=> adder_a,
@@ -657,5 +661,3 @@ begin
 			c_in	=> '0',
 			sum	=> adder_res
 		);
-end struct;
-----------------------------------------------------------------------

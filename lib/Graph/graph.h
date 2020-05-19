@@ -8,6 +8,7 @@
 
 template <class M > class Graph;
 
+
 template <class M>
 class GraphNode
 {
@@ -21,20 +22,17 @@ class GraphNode
 public:
     GraphNode(std::string name = ""):name(name){/*std::cout << "GraphNode constructor" << std::endl;*/}
     virtual ~GraphNode(){/*std::cout << "GraphNode destructor" << std::endl;*/}
-
     virtual M Distance(GraphNode* a) {return adj.size();}
-
     std::string getName() const {return name;}
-
     virtual void AddNeighbor(GraphNode* a){adj.push_back(a);}
-
 
 
 protected:
     std::string name;
-    BinHeapNode<GraphNode*, M>* heapPtr;
-    //M item;
     std::vector<GraphNode*> adj;
+
+private:
+    BinHeapNode<GraphNode*, M>* heapPtr;
 };
 
 
@@ -81,6 +79,7 @@ void Graph<M>::TopologicalSort()
     {
         if(!heap.Contains(x->heapPtr))
             x->heapPtr = heap.Push(x, 0);
+
         for(GraphNode<M>* y : x->adj)
         {
             if(heap.Contains(y->heapPtr))
@@ -107,7 +106,6 @@ void Graph<M>::TopologicalSort()
     //std::cout << "heap empty" << std::endl;
 
     return;
-
 }
 
 template< class M>
@@ -124,7 +122,9 @@ M Graph<M>::getWorstPathDistance()
                 distances[y] = dist + distances[x];
         }
     }
+
     M max(0);
+
     for(auto i : distances)
     {
         if(max < i.second)
@@ -140,11 +140,6 @@ template<class M>
 void Graph<M>::DeleteNode(int node)
 {
     auto it = adjList.begin() + node;
-    /*for(int i = 0; i < node; i++)
-    {
-        it++;
-    }
-    delete *it;*/
     sorted.erase(sorted.begin()+node);
     adjList.erase(it);
 }
@@ -153,10 +148,6 @@ template<class M>
 GraphNode<M> *Graph<M>::getNode(int node)
 {
     auto it = adjList.begin() + node;
-    /*for(int i = 0; i < node; i++)
-    {
-        it++;
-    }*/
     return *it;
 }
 

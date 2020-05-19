@@ -57,7 +57,6 @@ MyGraph::MyGraph(size_t n_i, size_t maxEdges, std::ostream &os)
 
                 i->AddNeighbor(getNode(r));
 
-
                 //std::cout << "->\"" << r <<"\"";
                 //os << "->\"" << r <<"\"";
 
