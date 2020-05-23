@@ -15,7 +15,9 @@ class CircuitNode : public GraphNode<double>
 {
     //friend std::ostream& operator<<(std::ostream& os, const CircuitNode& cn);
 public:
-    CircuitNode(CircuitGraph* it, int capacity);
+    CircuitNode(CircuitGraph* it, int capacity)
+        : it(it), outCapacity(capacity){}
+
     CircuitNode(CircuitGraph* it, std::string name) : GraphNode<double>(name), it(it) {worstInRTransit = 0; worstOutRTransit = 0;}
     virtual ~CircuitNode(){}
 
@@ -55,7 +57,7 @@ public:
     ~InputCircuitNode() {}
 
     double GetWorstDelay() override;
-    double GetWorstTransition() override;
+    double GetWorstTransition() override{return worstInRTransit;}
 
     void CalcOutputCap() override;
 
@@ -68,7 +70,8 @@ class OutputCircuitNode : public CircuitNode
 {
 
 public:
-    OutputCircuitNode(CircuitGraph* it, int capacity);
+    OutputCircuitNode(CircuitGraph* it, int capacity)
+        :CircuitNode(it, capacity){}
     OutputCircuitNode(CircuitGraph* it, std::string name):CircuitNode(it, name){}
     ~OutputCircuitNode(){}
 
@@ -89,7 +92,8 @@ class CircuitGraph : public Graph<double>
 
 public:
     CircuitGraph(const Circuit* c);
-    ~CircuitGraph(){}
+    ~CircuitGraph();
+
     double GetTimingParam(CircuitNode*, ParamType p);
 
     void Setup(); // for each cell, updates the output capacitance
@@ -103,8 +107,6 @@ private:
     //Cell {input_1, input_2 ... input_n, output_1 ... output_n}
     std::unordered_map<CircuitNode*, std::pair<const Cell*, int>>  map1;
     std::unordered_map<const Cell*, std::vector<CircuitNode*>> map2;
-
-    //void ChangeCell(Cell* cell);
 
     const Circuit* circuit;
 };

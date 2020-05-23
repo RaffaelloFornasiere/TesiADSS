@@ -7,7 +7,6 @@ std::ostream& operator<<(std::ostream &os, const CircuitGraph &cg)
 {
     for(auto& i : cg.map2)
     {
-
         size_t inputs = i.first->GetNumOfInputs();
         if(inputs > 0)
         {
@@ -76,6 +75,12 @@ CircuitGraph::CircuitGraph(const Circuit *c)
     return;
 }
 
+CircuitGraph::~CircuitGraph()
+{
+    for(auto& i : map1)
+        delete i.first;
+}
+
 void CircuitGraph::Setup()
 {
     for(auto& x : map2)
@@ -137,19 +142,14 @@ double InputCircuitNode::GetWorstDelay()
     return 0;
 }
 
-double InputCircuitNode::GetWorstTransition()
-{
-    return worstInRTransit;
-}
+
 
 void InputCircuitNode::CalcOutputCap()
 {
     outCapacity = 0;
 }
 
-OutputCircuitNode::OutputCircuitNode(CircuitGraph* it, int capacity)
-    :CircuitNode(it, capacity)
-{}
+
 
 double OutputCircuitNode::GetWorstDelay()
 {
@@ -203,11 +203,7 @@ void OutputCircuitNode::CalcOutputCap()
 //    return  os;
 //}
 
-CircuitNode::CircuitNode(CircuitGraph *it, int capacity)
-    : it(it), outCapacity(capacity)
-{
 
-}
 
 double CircuitNode::Distance(GraphNode *a)
 {

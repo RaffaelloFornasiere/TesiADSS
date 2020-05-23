@@ -67,7 +67,7 @@ int main()
     time_t start = clock();
     srand(time(nullptr));
 
-    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.029.vhdl", std::ios_base::in|std::ios_base::binary);
+    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/multiplier11.vhdl", std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
         throw std::invalid_argument("file del circuito inesistente2");
 
@@ -81,7 +81,6 @@ int main()
 
     CircuitGraph var (&c);
     var.Setup();
-
     var.TopologicalSort();
 
 
