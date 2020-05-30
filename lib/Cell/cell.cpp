@@ -5,8 +5,8 @@ std::istream& operator>>(std::istream &is, Cell &c)
     std::string aux;
     int g = is.tellg();
     is >> c.name;
-    //if(c.name == "FA1X18")
-    //    std::cout << "aaaa";
+    //    if(c.name == "MX41X7")
+    //        std::cout << "aaaa";
     while(std::getline(is>>std::ws, aux) && aux.find("leakage") == std::string::npos);
 
     Pin p;
@@ -54,8 +54,14 @@ std::istream& operator>>(std::istream &is, Cell &c)
             do
             {
                 c.timingInfo.back().emplace_back();
-            }while(is >> c.timingInfo.back().back() && c.timingInfo.back().back().getInfoType() != "");
-            c.timingInfo.back().pop_back();
+            }while(is >> c.timingInfo.back().back()
+                   && c.timingInfo.back().back().getInfoType() != "");
+            if(!is.eof())
+                c.timingInfo.back().pop_back();
+            else
+            {
+                //std::cout << "BBB£";
+            }
         }
     }
 
@@ -66,15 +72,15 @@ std::istream& operator>>(std::istream &is, Cell &c)
 std::ostream& operator<<(std::ostream &os, const Cell &c)
 {
     os << c.name << "\n";
-    os << "leakage" << "\n";
+    os << "\tleakage" << "\n";
     for(auto x : c.input)
-        os << x << "\n";
+        os << "\t" << x << "\n";
 
 
     for(size_t i = 0; i < c.output.size() && i < c.timingInfo.size(); i++)
     {
         auto x = c.output[i];
-        os << x << "  (fff)";
+        os << "\t" << x << "  (fff)";
         if(i == 0 && c.type != "HA" && c.type != "FA")
             os << " --- " << c.type;
         os  << "\n";
@@ -89,11 +95,34 @@ std::ostream& operator<<(std::ostream &os, const Cell &c)
 }
 
 
+void Cell::CopyParams(const Cell *c)
+{
+    if(type != c->type)
+        throw std::invalid_argument("impossible to copy different cells");
+
+    name = c->name;
+
+    for(size_t i = 0; i < input.size(); ++i)
+        input[i].capacity = c->input[i].capacity;
+
+    for(size_t i = 0; i < output.size(); ++i)
+        output[i].capacity = c->output[i].capacity;
+
+    area = c->area;
+    timingInfo = c->timingInfo;
+}
 
 double Cell::GetTimingInfo(double intransit, double outCap, size_t output, size_t infoType) const
 {
+
     if(this->type != "void")
+    {
+        //        std::cout << "\tin_tr: " << std::setw(10) << intransit
+        //                  << " out_c: " << std::setw(10) << outCap
+        //                  << " output: " << std::setw(3) << output
+        //                  << " infoType: " << std::setw(3) << infoType;
         return timingInfo[output][infoType].GetDelay(intransit, outCap);
+    }
 
     return 0;
 }
@@ -104,6 +133,7 @@ std::istream& operator>>(std::istream &is, CellTimingInfo& c)
 {
     is.flags(std::ios_base::fmtflags(is.flags()|std::ios::binary));
     std::string aux;
+    c.values.clear();
     int g = is.tellg();
 
     std::smatch maches;
@@ -135,6 +165,8 @@ std::istream& operator>>(std::istream &is, CellTimingInfo& c)
         while(is >> aux && !end)
         {
             c.values.back()[j] = std::stod(aux);
+            if(std::isnan(c.values.back()[j]))
+                throw std::invalid_argument("nan");
 
             if(++j == 3)
             {
@@ -149,16 +181,21 @@ std::istream& operator>>(std::istream &is, CellTimingInfo& c)
         c.values.pop_back();
         is.seekg(g);
     }
+    if(is.eof())
+        c.values.pop_back();
+
+
 
     return is;
 }
 
 std::ostream& operator<<(std::ostream &os, CellTimingInfo &c)
 {
-    os << c.infoType << "\n";
-    os << "input_net_transition total_output_net_capacitance time" << "\n";
+    os << "\t\t" << c.infoType << " (A)\n";
+    os << "\t\t\tinput_net_transition total_output_net_capacitance time" << "\n";
     for(auto x : c.values)
     {
+        os << "\t\t\t";
         for(auto y : x)
             os << y << " ";
         os << "\n";
@@ -168,6 +205,8 @@ std::ostream& operator<<(std::ostream &os, CellTimingInfo &c)
 
 double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) const
 {
+    //std::cout << "in_tr: " << std::setw(10) << inputTransition << " out_c: " << std::setw(10) << outCapacitance << " - ";
+
     //finds the range of capacitange according to the input transition
     struct Comp
     {
@@ -228,8 +267,10 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) c
     }
 
 
-    return (outCapacitance - succCap)/(prevCap-succCap)*prevT -
+    double res =(outCapacitance - succCap)/(prevCap-succCap)*prevT -
             (outCapacitance - prevCap)/(prevCap-succCap)*succT;
+    // std::cout << " res: " << res << std::endl << std::endl;
+    return res;
 }
 
 void CellTimingInfo::Test()

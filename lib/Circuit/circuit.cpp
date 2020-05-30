@@ -34,7 +34,8 @@ void Circuit::AssignRandom()
             if(cellSelection->at(i)[0].type == it.first.type)
             {
                 int j = rand()%cellSelection->at(i).size();
-                it.first = cellSelection->at(i)[j];
+                it.first.CopyParams(&cellSelection->at(i)[j]);
+                //it.first = cellSelection->at(i)[j];
             }
         }
     }
@@ -88,7 +89,7 @@ void Circuit::ChangeCell(const Cell *c) const
     if(c->type == "void")
         return;
 
-    auto it = &std::find_if (adjList.begin(), adjList.end(),
+    Cell* it = &std::find_if (adjList.begin(), adjList.end(),
                              [=](std::pair<Cell, std::vector<Cell*>>& cell)
     {return &cell.first == c;})->first;
 
@@ -102,13 +103,100 @@ void Circuit::ChangeCell(const Cell *c) const
     if(it2->size() != 0)
     {
         size_t rnd = rand()%it2->size();
-        *it = (*it2)[rnd];
+        (*it).CopyParams(&(*it2)[rnd]);
     }
     else
     {
         throw std::logic_error("unknown error");
     }
 
+
+}
+
+bool Circuit::ChangeCell(const Cell *c, double p) const
+{
+    if(c->type == "void")
+        return 0;
+
+    auto it = &std::find_if (adjList.begin(), adjList.end(),
+                             [=](std::pair<Cell, std::vector<Cell*>>& cell)
+    {return &cell.first == c;})->first;
+
+    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
+                             [=](std::vector<Cell>& cells)
+    {return cells[0].type == it->type;});
+
+    if(it2 == cellSelection->end())
+        throw std::invalid_argument("no cell found in cell-selection");
+
+    if(it2->size() != 0)
+    {
+        size_t cell = p*(it2->size()-1);
+
+        if((*it) != (*it2)[cell])
+        {
+            (*it).CopyParams(&(*it2)[cell]);
+            return true;
+        }
+        return false;
+
+    }
+    else
+    {
+        throw std::logic_error("unknown error");
+    }
+}
+
+void Circuit::ChangeCell(size_t i) const
+{
+    if(inputLists[i].first->type == "void")
+        return;
+
+    auto it = inputLists[i].first;
+    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
+                             [=](std::vector<Cell>& cells)
+    {return cells[0].type == inputLists[i].first->type;});
+
+    if(it2->size() != 0)
+    {
+        size_t cell = rand()%it2->size();
+
+        if((*it) != (*it2)[cell])
+            (*it).CopyParams(&(*it2)[cell]);
+
+    }
+    else
+    {
+        throw std::logic_error("unknown error");
+    }
+}
+
+bool Circuit::ChangeCell(size_t i, double p) const
+{
+    if(inputLists[i].first->type == "void")
+        return 0;
+
+    auto it = inputLists[i].first;
+    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
+                             [=](std::vector<Cell>& cells)
+    {return cells[0].type == inputLists[i].first->type;});
+
+    if(it2->size() != 0)
+    {
+        size_t cell = p*(it2->size()-1);
+
+        if((*it) != (*it2)[cell])
+        {
+            (*it).CopyParams(&(*it2)[cell]);
+            return true;
+        }
+        return false;
+
+    }
+    else
+    {
+        throw std::logic_error("unknown error");
+    }
 
 }
 

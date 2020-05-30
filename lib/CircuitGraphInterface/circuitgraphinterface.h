@@ -4,21 +4,26 @@
 #include <unordered_map>
 #include <iostream>
 #include "../Circuit/circuit.h"
+#include "../BRKGA/BRKGA.h"
+#include <thread>
 
-
-class CircuitGraph;
-
+class CircuitSolver;
 enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
+
 
 
 class CircuitNode : public GraphNode<double>
 {
-    //friend std::ostream& operator<<(std::ostream& os, const CircuitNode& cn);
-public:
-    CircuitNode(CircuitGraph* it, int capacity)
-        : it(it), outCapacity(capacity){}
+    friend std::ostream& operator<<(std::ostream& os, const CircuitNode& cn);
 
-    CircuitNode(CircuitGraph* it, std::string name) : GraphNode<double>(name), it(it) {worstInRTransit = 0; worstOutRTransit = 0;}
+public:
+    CircuitNode(CircuitSolver* it, int capacity, std::string name = "")
+        : GraphNode<double>(name), it(it), outCapacity(capacity)
+    {worstInRTransit = 0; worstOutRTransit = 0;}
+
+    CircuitNode(CircuitSolver* it, std::string name)
+        : GraphNode<double>(name), it(it)
+    {worstInRTransit = 0; worstOutRTransit = 0;}
     virtual ~CircuitNode(){}
 
 
@@ -38,7 +43,7 @@ public:
 
 
 protected:
-    CircuitGraph* it;
+    CircuitSolver* it;
     double worstInRTransit;
     double worstOutRTransit;
     double delay;
@@ -52,27 +57,28 @@ protected:
 class InputCircuitNode : public CircuitNode
 {
 public:
-    InputCircuitNode(CircuitGraph *it, int capacity = 0);
-    InputCircuitNode(CircuitGraph* it, std::string name) : CircuitNode(it, name){}
+    InputCircuitNode(CircuitSolver *it, int capacity = 0, std::string name = "")
+        : CircuitNode(it, capacity, name) {}
+    InputCircuitNode(CircuitSolver* it, std::string name)
+        : CircuitNode(it, name){}
     ~InputCircuitNode() {}
 
-    double GetWorstDelay() override;
+    double GetWorstDelay() override {return 0;}
     double GetWorstTransition() override{return worstInRTransit;}
-
-    void CalcOutputCap() override;
+    void CalcOutputCap() override {outCapacity = 0;}
 
 private:
-
 };
 
 
 class OutputCircuitNode : public CircuitNode
 {
-
 public:
-    OutputCircuitNode(CircuitGraph* it, int capacity)
-        :CircuitNode(it, capacity){}
-    OutputCircuitNode(CircuitGraph* it, std::string name):CircuitNode(it, name){}
+    OutputCircuitNode(CircuitSolver* it, int capacity, std::string name = "")
+        : CircuitNode(it, capacity, name)
+    {delayUpdated = transitionUpdated = false;}
+    OutputCircuitNode(CircuitSolver* it, std::string name)
+        : CircuitNode(it, name){}
     ~OutputCircuitNode(){}
 
     double GetWorstDelay() override;
@@ -80,35 +86,63 @@ public:
     void CalcOutputCap() override;
 
 private:
-
+    bool delayUpdated;
+    bool transitionUpdated;
 };
 
 
 
-class CircuitGraph : public Graph<double>
+
+
+
+
+class CircuitSolver : public Graph<double>, public BRKGA<Circuit, double>
 {
-    friend std::ostream& operator<<(std::ostream& os, const CircuitGraph& cg);
+    friend std::ostream& operator<<(std::ostream& os, const CircuitSolver& cg);
     friend class CircuitNode;
 
+
 public:
-    CircuitGraph(const Circuit* c);
-    ~CircuitGraph();
+    CircuitSolver(const Circuit* c, BRKGAParams params, bool init = 0);
+    ~CircuitSolver();
 
-    double GetTimingParam(CircuitNode*, ParamType p);
 
+    // circuit
     void Setup(); // for each cell, updates the output capacitance
-    void CellSetup(Cell*); // update out cap for a signle cell
-    void ChangeCell(const Cell* cell) const {circuit->ChangeCell(cell);}
     std::pair<const Cell*, int> GetCell(CircuitNode *n) const;
+    void ChangeCell(const Cell* cell) const {circuit->ChangeCell(cell);}
+
+
+    // *********** Solver methods **************
+    void Decode() override;
+    bool StopCriteria() override;
+    double Percentile() override;
+    // *****************************************
+
+
+    size_t getMaxGenerations() const {return maxGenerations;}
+    void setMaxGenerations(const size_t &value){maxGenerations = value;}
+    double BestSolution() const override {return fit_1(fitVect.front().first);}
 
 private:
+
     void CreateEdges();
+    double GetTimingParam(CircuitNode*, ParamType p);
+    void CellSetup(const Cell *cell); // update out cap for a signle cell
+
 
     //Cell {input_1, input_2 ... input_n, output_1 ... output_n}
     std::unordered_map<CircuitNode*, std::pair<const Cell*, int>>  map1;
     std::unordered_map<const Cell*, std::vector<CircuitNode*>> map2;
 
     const Circuit* circuit;
+
+
+    size_t maxGenerations;
+    std::function<double(double)> fit = [](double time){return 100.0/time;};
+    std::function<double(double)> fit_1 = [](double val){return 100.0/val;};
+
+
 };
 
 #endif // CIRCUITGRAPHINTERFACE_H

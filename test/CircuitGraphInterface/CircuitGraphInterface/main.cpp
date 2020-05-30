@@ -64,8 +64,8 @@ int main()
     // -----------------------------------------------------------------------------------------------------------------------------------
     //                                                              SETUP
     // -----------------------------------------------------------------------------------------------------------------------------------
-    time_t start = clock();
-    srand(time(nullptr));
+
+    //srand(time(nullptr));
 
     std::ifstream inFile2 ("../../../files/InputFiles/Circuits/multiplier11.vhdl", std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
@@ -79,17 +79,21 @@ int main()
     inFile2 >> c;
     outFile << c;
 
-    CircuitGraph var (&c);
-    var.Setup();
-    var.TopologicalSort();
+    BRKGAParams p (30, c.GetNumOfCells(), 5, 7, 0.7, 0);
+    CircuitSolver var (&c, p, 0);
+    //var.setMaxGenerations(20);
+    //var.Evolve();
+    //std::cout << var.BestSolution();
 
 
     var.Setup();
     std::cout << "calcolo delay";
+    time_t start = clock();
     double f = var.getWorstPathDistance();
     std::cout << "fine calcolo. Tempo impiegato: " << clock()-start << " [ms] " << std::endl;
     std::cout << "delay calcolato: " << f << std::endl;
     //outFile << var;
+
 
 
 

@@ -8,6 +8,15 @@
 
 template <class M > class Graph;
 
+//  ***********************************************************************************************************
+//  A graph data structure ford DAGs implemented as an interface. It uses a binary heap when creating a sorted
+//  vector that is used to calculate the worst path.
+//  The two main methods of the class are the one that performs the topological sort and the one the calculate
+//  the distance. The second one is a revisited and simplified version of dijkstra that works with multisources
+//  DAGs. If n is the number of the nodes, the time cost of the topological sort is O(nlog(n)) and the one of
+//  the distance algorihtm is O(n*d) where d is the average density of the graph.
+//  The interface is not fully featured yet.
+//  ***********************************************************************************************************
 
 template <class M>
 class GraphNode
@@ -44,18 +53,23 @@ class Graph
 
 public:
     Graph(){}
+    virtual ~Graph(){}
+
+    // **********************************************************************
     void TopologicalSort();
     M getWorstPathDistance();
-    M OrderAndGetWorstDistance();
+    //M OrderAndGetWorstDistance();
 
-    virtual void AddNode(GraphNode<M>*a) {adjList.push_back(a);}
+    //virtual void AddNode(GraphNode<M>*a) {adjList.push_back(a);}
     virtual void DeleteNode(int i);
 
-    size_t NumNodes()const {return adjList.size();}
+    //size_t NumNodes()const {return adjList.size();}
     GraphNode<M>* getNode(int node);
+    // **********************************************************************
+
+
 
 protected:
-    //virtual M Distance(GraphNode<T,M> n1, GraphNode<T,M> n2);
     std::vector<GraphNode<M>*> adjList;
     std::vector<GraphNode<M>*> sorted;
 };
@@ -70,11 +84,16 @@ std::ostream& operator<<(std::ostream &os, const Graph<M> &g)
     return os;
 }
 
+
+//  ********************************************************************************************
+//  In the first part it constructs the heap in order to keep in the top the elements that have less
+//  input connections. A the end of the heap the first node should be a source. Otherwise there is a cycle
+//
+
 template<class M>
 void Graph<M>::TopologicalSort()
 {
     BinHeap<GraphNode<M>*, M> heap(adjList.size(), BinHeap<GraphNode<M>*,M>::minHeap);
-    //std::cout << "init heap" << std::endl;
     for(GraphNode<M>* x : adjList)
     {
         if(!heap.Contains(x->heapPtr))
@@ -88,13 +107,14 @@ void Graph<M>::TopologicalSort()
                 y->heapPtr = heap.Push(y, 1);
         }
     }
-    //std::cout << "heap created" << std::endl;
 
-    if(heap.Front().second != 0)
-        throw std::logic_error("the graph is not a DAG");
+
+
 
     while(!heap.Empty())
     {
+        if(heap.Front().second != 0)
+            throw std::logic_error("the graph is not a DAG");
         std::pair<GraphNode<M>*, M> e = heap.Front();
         sorted.push_back(e.first);
         for(GraphNode<M>* x : e.first->adj)

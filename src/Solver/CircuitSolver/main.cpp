@@ -11,14 +11,44 @@
 
 std::vector<std::vector<Cell>> readCellLibrary(std::string filename);
 
+// ************************************************************************
+// legge le celle
+// legge il circuito
+//  -   costruisce un grafo di celle. Viene salvato attraverso 2 liste di
+//      adiacenza. Vengono usate due liste per ridurre il costo di ricerca
+//  -   man mano che viene letto il circuito venogno create e collegate le
+//      celle tra loro in funzione del nome del segnale al quale sono
+//      collegate. Le celle create non hanno una corrispondenza reale.
+//      questa verrà creata in seuito
+// converte il circuito in un grafo
+//  -   riceve in ingersso un puntatore al circuito e costruisce un grafo
+//      che fa riferimento al circuito dove ogni coppia di nodi rappresenta
+//      un collegamento. Ogni nodo rappresenta un pin di ingresso od un pin
+//      di uscita ed ha dei parametri relativi alle dipendenze temporali
+//      ed un parametro per la capacità che vede in uscita.
+//      Per creare i nodi legge la lista di adiacenza e per ogni ingresso e
+//      uscita di ogni cella crea un nodo del grafo. Collega poi tutti i nodi
+//      e calcola le capacità. Infine viene ordinato il grafo in un array
+//      tramite un ordinamento topologico.
+// applica il risolutore
+// ************************************************************************
+
+
+
+
+
+
 
 int main()
 {
+
+
+
     // -----------------------------------------------------------------------------------------------------------------------------------
     //                                                              SETUP
     // -----------------------------------------------------------------------------------------------------------------------------------
-    time_t start = clock();
-    srand(time(nullptr));
+    //time_t start = clock();
+    srand(1);
 
     std::ifstream inFile2 ("../../../files/InputFiles/Circuits/multiplier11.vhdl", std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
@@ -35,22 +65,19 @@ int main()
     inFile2 >> c;
     //outFile << c; // only for graphing
 
+    std::cout << "Initialization done" << std::endl;
+    size_t pop = 40;
+    BRKGAParams p (pop, c.GetNumOfCells(), 0.2*pop, 0.3*pop, 0.6, 1);
+    CircuitSolver var (&c, p, 0);
+
+    std::cout << "first solution " << var.getWorstPathDistance() << std::endl;
 
 
+    var.setMaxGenerations(400);
+    std::cout << "setting GA done" << std::endl;
 
-    CircuitGraph var (&c);
-    var.Setup();
-    var.TopologicalSort();
-
-
-    var.Setup();
-    std::cout << "calcolo delay";
-    double f = var.getWorstPathDistance();
-    std::cout << "fine calcolo. Tempo impiegato: " << clock()-start << " [ms] " << std::endl;
-    std::cout << "delay calcolato: " << f << std::endl;
-    //outFile << var;
-
-
+    var.Evolve();
+    std::cout << var.BestSolution() << std::endl;
 
     return 0;
 }

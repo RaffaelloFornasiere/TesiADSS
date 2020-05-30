@@ -8,6 +8,8 @@
 
 int main()
 {  
+
+
     std::ifstream inFile ("../../../files/InputFiles/Cell_Libraries/cell_library.hs", std::ios_base::in|std::ios_base::binary);
     if(!inFile)
         throw std::invalid_argument("file inesistente");
@@ -19,7 +21,12 @@ int main()
     while(inFile >> c)
     {
         if(c.getName() != "")
+        {
             cells.emplace_back(c);
+            if ( c.getName().find("XOR3X4") != std::string::npos)
+                std::cout << "aaa" << std::endl;
+        }
+
         else
         {
             CellTimingInfo cinfo;
@@ -35,8 +42,13 @@ int main()
     if(c.getName() != "")
         cells.emplace_back(c);
 
+
+
     for(auto& x : cells)
+    {
+        std::cout << x.getName() << std::endl;
         outFile << x;
+    }
     std::cout << "all ok" << std::endl;
 
     return 0;

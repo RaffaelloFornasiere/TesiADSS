@@ -49,6 +49,10 @@ public:
     std::vector<const Cell*> GetOutputsOfCell(const Cell* c) const;
 
     void ChangeCell(const Cell *c) const;
+    bool ChangeCell(const Cell *c, double p) const;
+    void ChangeCell(size_t i) const;
+    bool ChangeCell(size_t i, double p) const;
+
 
 private:
     mutable std::list<std::pair<Cell, std::vector<Cell*>>> adjList;

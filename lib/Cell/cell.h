@@ -5,6 +5,8 @@
 #include <string>
 #include <algorithm>
 #include <regex>
+#include <cmath>
+#include <iomanip>
 
 //  *****************************************************************************
 //  Stores the data about pin names and capacity. Pin names are used to identify
@@ -23,7 +25,7 @@ class Pin
     friend bool operator==(const std::string s, const Pin& p){return p.name == s;}
 
 public:
-    Pin(std::string name = "") : name(name) {}
+    Pin(std::string name = "") : name(name) {capacity = 0;}
     std::string name;
     bool dir;
     double capacity;
@@ -96,7 +98,10 @@ class Cell
 
     friend std::istream& operator>>(std::istream& is, Cell& c);
     friend std::ostream& operator<<(std::ostream& os, const Cell& c);
-    //bool operator=(const Cell& c2);
+    friend bool operator==(const Cell& c1, const Cell& c2){return c1.name == c2.name;}
+    friend bool operator!=(const Cell& c1, const Cell& c2){return c1.name != c2.name;}
+
+    //Cell& operator=(const Cell& c);
 
 public:
     Cell(std::string cellName = "") : name(cellName){}
@@ -107,6 +112,7 @@ public:
 
     std::string getType() const{return type;}
     void setType(const std::string &value){type = value;}
+    void CopyParams(const Cell* c);
     // **************************************************************************
 
 

@@ -1,33 +1,128 @@
 #include "circuitgraphinterface.h"
-
-
-
-
-std::ostream& operator<<(std::ostream &os, const CircuitGraph &cg)
+// *********************************************************************************************************************************************
+//
+// *********************************************************************************************************************************************
+double OutputCircuitNode::GetWorstDelay()
 {
-    for(auto& i : cg.map2)
+    if(delayUpdated == false)
     {
-        size_t inputs = i.first->GetNumOfInputs();
-        if(inputs > 0)
-        {
-            os << "@begin" << std::endl;
-            for(size_t j = 0; j < inputs; j++)
-            {
-                os << *i.second[j];// << std::endl;
-            }
-            os << "@end" << std::endl;
-        }
-        for(size_t j = 0; j < i.first->GetNumOfOutputs(); j++)
-        {
-            os << *i.second[inputs+j]; //<< std::endl;
-        }
-        //os << std::endl;
+        auto p = it->GetCell(this);
+
+        size_t outputIndex = p.second - p.first->GetNumOfInputs();
+
+        //        std::cout << "cell: "   << p.first->getName()
+        //                  << " ctype: " << p.first->getType()
+        //                  << " wit: "   << worstInRTransit
+        //                  << " out_c: " << outCapacity << std::endl;
+
+        double cellRise = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::cell_rise);
+        double cellFall = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::cell_fall);
+        delay = std::max(cellFall, cellRise);
+        delayUpdated = true;
     }
+    return delay;
+}
+
+double OutputCircuitNode::GetWorstTransition()
+{
+    if(transitionUpdated == false)
+    {
+        auto p = it->GetCell(this);
+        size_t outputIndex = p.second - p.first->GetNumOfInputs();
+
+        //        std::cout << "\tcell: "   << p.first->getName()
+        //                  << " ctype: " << p.first->getType()
+        //                  << " wit: "   << worstInRTransit
+        //                  << " out_c: " << outCapacity << std::endl;
+
+
+        double riseTransit = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::rise_transition);
+        double fallTransit = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::fall_transition);
+        worstOutRTransit = std::max(fallTransit, riseTransit);
+        transitionUpdated = true;
+    }
+
+    return worstOutRTransit;
+}
+
+void OutputCircuitNode::CalcOutputCap()
+{
+    auto p = it->GetCell(this);
+    int index = p.second-p.first->GetNumOfInputs();
+
+    outCapacity = p.first->GetOutPinCapacity(index);
+    //std::cout << "outcap of: " << p.first->getName() << std::endl;
+
+    for(auto& i : adj)
+    {
+        auto p2 = it->GetCell(static_cast<CircuitNode*>(i));
+        //std::cout << "\t cell: " << p2.first->getName();
+        double cap = p2.first->GetInPinCapacity(p2.second);
+        outCapacity += cap;
+        //std::cout << " cap: " << cap << std::endl;
+    }
+    //std::cout << "\t total out_cap " << outCapacity << std::endl;
+    transitionUpdated = false;
+    delayUpdated = false;
+}
+
+
+double CircuitNode::Distance(GraphNode *a)
+{
+
+    double worstTransition = GetWorstTransition();
+
+    CircuitNode* aux = static_cast<CircuitNode*>(a);
+    aux->SetInTransition(worstTransition);
+
+    return GetWorstDelay();
+}
+// *********************************************************************************************************************************************
+//
+// *********************************************************************************************************************************************
+
+
+
+// *********************************************************************************************************************************************
+//
+// *********************************************************************************************************************************************
+std::ostream& operator<<(std::ostream &os, const CircuitSolver &cg)
+{
+    std::vector<CircuitNode* > v;
+    for(auto& i : cg.map1)
+    {
+        CircuitNode* c = i.first;
+        v.emplace_back(c);
+
+        //        size_t inputs = i.first->GetNumOfInputs();
+        //        if(inputs > 0)
+        //        {
+        //            //os << "@begin" << std::endl;
+        //            for(size_t j = 0; j < inputs; j++)
+        //            {
+        //                os << *i.second[j];// << std::endl;
+        //            }
+        //            //os << "@end" << std::endl;
+        //        }
+        //        for(size_t j = 0; j < i.first->GetNumOfOutputs(); j++)
+        //        {
+        //            os << *i.second[inputs+j]; //<< std::endl;
+        //        }
+        //        os << std::endl;
+    }
+
+    std::sort(v.begin(), v.end(),
+              [&](CircuitNode* c1, CircuitNode* c2)
+    {return c1->getName() > c2->getName();});
+
+    for(auto& i : v)
+        os << *i;
+
     return os;
 }
 
-CircuitGraph::CircuitGraph(const Circuit *c)
-    : circuit(c)
+CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
+    : BRKGA(params), circuit(c)
 {
     // for each cell in the circuit, it will create some circuit nodes
 
@@ -42,14 +137,20 @@ CircuitGraph::CircuitGraph(const Circuit *c)
         //create the input circuitnodes
         for(size_t j = 0; j < inputs; j++)
         {
-            vect.emplace_back(new InputCircuitNode(this, "in" + std::to_string(j) + "_" + aux->getName()));
+            if(!init)
+                circuit->ChangeCell(i, 0);
+            double cap = aux->GetInPinCapacity(j);
+            vect.emplace_back(new InputCircuitNode(this, cap, "in" + std::to_string(j) + "_" + aux->getName()));
             map1.insert(std::make_pair(vect.back(), std::make_pair(aux, j)));
         }
 
         //create the output circuitnodes
         for(size_t j = 0; j < outputs; j++)
         {
-            vect.emplace_back(new OutputCircuitNode(this, "out"+std::to_string(j)+"_"+aux->getName()));
+            if(!init)
+                circuit->ChangeCell(i, 0);
+            double cap = aux->GetInPinCapacity(j);
+            vect.emplace_back(new OutputCircuitNode(this, cap, "out"+std::to_string(j)+"_"+aux->getName()));
             map1.insert(std::make_pair(vect.back(), std::make_pair(aux, inputs + j)));
         }
         if(vect.size() != 0)
@@ -72,20 +173,11 @@ CircuitGraph::CircuitGraph(const Circuit *c)
         adjList.push_back(i.first);
     }
 
-    return;
-}
+    TopologicalSort();
 
-CircuitGraph::~CircuitGraph()
-{
-    for(auto& i : map1)
-        delete i.first;
-}
-
-void CircuitGraph::Setup()
-{
     for(auto& x : map2)
     {
-        circuit->ChangeCell(x.first);
+        circuit->ChangeCell(x.first, 0);
         for(auto& y : x.second)
         {
             y->CalcOutputCap();
@@ -95,20 +187,38 @@ void CircuitGraph::Setup()
     return;
 }
 
-std::pair<const Cell *, int> CircuitGraph::GetCell(CircuitNode *n) const
+CircuitSolver::~CircuitSolver()
+{
+    for(auto& i : map1)
+        delete i.first;
+}
+
+void CircuitSolver::Setup()
+{
+    for(auto& x : map2)
+    {
+        for(auto& y : x.second)
+        {
+            y->CalcOutputCap();
+        }
+    }
+
+    return;
+}
+
+std::pair<const Cell *, int> CircuitSolver::GetCell(CircuitNode *n) const
 {
     auto it = map1.begin();
     map1.find(n);
 
     if((it = map1.find(n)) == map1.end())
-       throw std::invalid_argument("nessuna corrispondenza");
+        throw std::invalid_argument("nessuna corrispondenza");
 
     auto it2 = *it;
     return it2.second;
 }
 
-
-void CircuitGraph::CreateEdges()
+void CircuitSolver::CreateEdges()
 {
     for(size_t i = 0; i < circuit->GetNumOfCells(); i++)
     {
@@ -133,86 +243,71 @@ void CircuitGraph::CreateEdges()
     }
 }
 
-InputCircuitNode::InputCircuitNode(CircuitGraph* it, int capacity)
-    : CircuitNode(it, capacity)
-{}
-
-double InputCircuitNode::GetWorstDelay()
+void CircuitSolver::CellSetup(const Cell* cell)
 {
-    return 0;
-}
-
-
-
-void InputCircuitNode::CalcOutputCap()
-{
-    outCapacity = 0;
-}
-
-
-
-double OutputCircuitNode::GetWorstDelay()
-{
-    auto p = it->GetCell(this);
-
-    size_t outputIndex = p.second - p.first->GetNumOfInputs();
-
-    double cellRise = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::cell_rise);
-    double cellFall = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::cell_fall);
-
-    return std::max(cellFall, cellRise);
-}
-
-double OutputCircuitNode::GetWorstTransition()
-{
-    auto p = it->GetCell(this);
-    size_t outputIndex = p.second - p.first->GetNumOfInputs();
-
-    double riseTransit = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::rise_transition);
-    double fallTransit = p.first->GetTimingInfo(worstInRTransit, outCapacity, outputIndex, Cell::fall_transition);
-
-    return std::max(fallTransit, riseTransit);
-}
-
-void OutputCircuitNode::CalcOutputCap()
-{
-    auto p = it->GetCell(this);
-    int index = p.second-p.first->GetNumOfInputs();
-
-    outCapacity = p.first->GetOutPinCapacity(index);
-    for(auto& i : adj)
+    auto x = map2[cell];
+    for(auto& y : x)
     {
-        auto p2 = it->GetCell(static_cast<CircuitNode*>(i));
-        outCapacity += p2.first->GetInPinCapacity(p2.second);
+        y->CalcOutputCap();
     }
 }
 
-//std::ostream& operator<<(std::ostream &os, const CircuitNode &cn)
-//{
-//    //os << "\"" << cn.name << "\"";
-//    for(auto i : cn.adj)
-
-//        os << "\"" << cn.name << "\""
-//           << "->\"" << i->getName() << "\""
-
-//           << "|" << cn.outCapacity << "|"
-//           << "|" << cn.outCapacity << "|"
-//           << "|" << cn.outCapacity << "|"
-
-//           << std::endl;
-//    return  os;
-//}
 
 
 
-double CircuitNode::Distance(GraphNode *a)
+
+
+
+std::ostream& operator<<(std::ostream &os, const CircuitNode &cn)
 {
-    double worstTransition = GetWorstTransition();
+    os << "\"" << cn.name << "\"";
+    for(auto i : cn.adj)
+    {
+        std::string s = i->getName();
+        os /*<< "\"" << cn.name << "\""*/
+                << "->\"" << i->getName() << "\"";
+    }
+    os << std::endl;
+    return  os;
+}
+// *********************************************************************************************************************************************
+//
+// *********************************************************************************************************************************************
 
-    CircuitNode* aux = static_cast<CircuitNode*>(a);  
-    aux->SetInTransition(worstTransition);
 
-    return GetWorstDelay();
+
+void CircuitSolver::Decode()
+{
+    //for each element inside the fitvect i'll take
+
+    for(auto& item : fitVect)
+    {
+        //time_t start = clock();
+        std::vector<double> alleles = hypercube[item.second];
+
+//        for(auto& i : alleles)
+//            std::cout << i << " ";
+
+        for(size_t i = 0; i < circuit->GetNumOfCells(); i++)
+        {
+            circuit->ChangeCell(i, alleles[i]);
+        }
+        Setup();
+        item.first = fit(getWorstPathDistance());
+        //std::cout << " res: " << item.first << std::endl;
+    }
+}
+
+
+bool CircuitSolver::StopCriteria()
+{
+    //std::cout << BestSolution() << std::endl;
+    return generations >= maxGenerations;
+}
+
+double CircuitSolver::Percentile()
+{
+    return std::floor(static_cast<double>(generations)/maxGenerations*100);
 }
 
 
