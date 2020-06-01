@@ -37,15 +37,16 @@ public:
 
 
 //  *****************************************************************************
-//  Represent a handler to read and sto the data about the different timing
-//  parameters about the cell. these parameters in a matricial form where columns
+//  Represent a handler to read and store the data about the different timing
+//  parameters of the cell. These parameters in a matricial form where columns
 //  represent in order:
 //  input_net_transition total_out_capacitance delay_time
-//  so in the matrix each row represent a set of this parameters that describe
+//  so, in the matrix each row represent a set of this parameters. This matrix describe
 //  almost completely the cell behavior on different input and output parameters.
 //  This class store the entire matrix and provide a function that takes the
 //  input_transition value and the out_capacitance and return the corresponding delay
-//  value
+//  value. If the input doesn't match any matrix entry, an interpolation is performed
+//  and an approximated value is returned
 //  *****************************************************************************
 
 class CellTimingInfo
@@ -86,12 +87,14 @@ private:
 
 
 //  *****************************************************************************
-//  The class it's an input inferface and represent the whole cell structure,
+//  The class it's an input inferface and represent the whole cell structure:
 //  has a name, a type (AND, OR, XOR, HA, etc...), a set of inputs and outputs
-//  (stored as Pin objects) and for each output stores the timing data about
-//  the different delays of the cell as CellTimingInfo objects.
+//  (stored as vector of Pin objects) and for each output stores the timing data
+//  about the different delays of the cell as CellTimingInfo objects.
+//  The function CopyParams is used to replace a cell with another of the same grup
+//  this cell peforms a special copy that keeps unchanged some informations that
+//  are used to construct and check the topology of the circuit
 //  *****************************************************************************
-
 class Cell
 {    
     friend class Circuit;
@@ -100,8 +103,6 @@ class Cell
     friend std::ostream& operator<<(std::ostream& os, const Cell& c);
     friend bool operator==(const Cell& c1, const Cell& c2){return c1.name == c2.name;}
     friend bool operator!=(const Cell& c1, const Cell& c2){return c1.name != c2.name;}
-
-    //Cell& operator=(const Cell& c);
 
 public:
     Cell(std::string cellName = "") : name(cellName){}
@@ -112,10 +113,10 @@ public:
 
     std::string getType() const{return type;}
     void setType(const std::string &value){type = value;}
-    void CopyParams(const Cell* c);
     // **************************************************************************
 
-
+    // special copy
+    void CopyParams(const Cell* c);
 
     // *******************GETTERS OF CELL PARAMETERS*****************************
     double GetInPinCapacity(int i) const {return input[i].capacity;}
@@ -128,6 +129,9 @@ public:
 
     std::string GetInputName(int i) const {return input[i].name;}
     std::string GetOutputName(int i) const {return output[i].name;}
+
+
+    double getArea() const {return area;}
     // **************************************************************************
 
 
@@ -143,12 +147,12 @@ public:
     static const size_t rise_transition = 3;
     // **************************************************************************
 
+
 private:
     std::string name;
     std::string type;
 
     double area;
-
 
     std::vector<Pin> input;
     std::vector<Pin> output;

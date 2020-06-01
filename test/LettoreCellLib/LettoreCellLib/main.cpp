@@ -23,8 +23,8 @@ int main()
         if(c.getName() != "")
         {
             cells.emplace_back(c);
-            if ( c.getName().find("XOR3X4") != std::string::npos)
-                std::cout << "aaa" << std::endl;
+            //if ( c.getName().find("XOR3X4") != std::string::npos)
+            //    std::cout << "aaa" << std::endl;
         }
 
         else

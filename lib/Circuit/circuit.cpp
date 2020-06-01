@@ -1,5 +1,8 @@
 #include "circuit.h"
 
+// ***************************************************************************************************************************
+//                                          CIRCUIT METHODS : INPUT PART
+// ***************************************************************************************************************************
 
 std::ostream& operator<<(std::ostream &os, const Circuit &c)
 {
@@ -19,190 +22,34 @@ std::ostream& operator<<(std::ostream &os, const Circuit &c)
     return os;
 }
 
-Circuit::Circuit(std::vector<std::vector<Cell>> *selection)
-    : cellSelection(selection)
-{}
 
-
-void Circuit::AssignRandom()
+std::istream& operator>>(std::istream &is, Circuit &c)
 {
+    std::string aux;
 
-    for (auto& it : adjList)
+    while(std::getline(is>>std::ws, aux) && aux.find("begin") == std::string::npos);
+
+
+    while(std::getline(is>>std::ws, aux) && aux.find("end") == std::string::npos)
     {
-        for(size_t i = 0; i < cellSelection->size(); i++)
-        {
-            if(cellSelection->at(i)[0].type == it.first.type)
-            {
-                int j = rand()%cellSelection->at(i).size();
-                it.first.CopyParams(&cellSelection->at(i)[j]);
-                //it.first = cellSelection->at(i)[j];
-            }
-        }
-    }
-
-    return;
-
-}
-
-std::vector<const Cell *> Circuit::GetInputsOfCell(int cell) const
-{
-    std::vector<const Cell*> aux; for(auto i : inputLists[cell].second)aux.push_back(i); return aux;
-}
-
-std::vector<const Cell *> Circuit::GetInputsOfCell(const Cell *cell) const
-{
-    auto it = std::find_if(inputLists.begin(), inputLists.end(), [=](std::pair<Cell*, std::vector<Cell*>> c){return c.first == cell;});
-    if(it == inputLists.end())
-        throw std::invalid_argument("no corresponding cell in circuit");
-
-    std::vector<const Cell*> res;
-    for(auto& i : (*it).second)
-        res.push_back(i);
-    return res;
-}
-
-std::vector<const Cell *> Circuit::GetOutputsOfCell(int cell) const
-{
-    auto it = adjList.begin();
-    for(int i = 0; i < cell; i++)
-        it++;
-    std::vector<const Cell*> res;
-    for(auto& i : (*it).second)
-        res.push_back(i);
-    return res;
-}
-
-std::vector<const Cell *> Circuit::GetOutputsOfCell(const Cell *cell) const
-{
-    auto it = std::find_if(adjList.begin(), adjList.end(), [=](std::pair<Cell, std::vector<Cell*>> c){return &c.first == cell;});
-    if(it == adjList.end())
-        throw std::invalid_argument("no corresponding cell in circuit");
-
-    std::vector<const Cell*> res;
-    for(auto& i : (*it).second)
-        res.push_back(i);
-    return res;
-}
-
-void Circuit::ChangeCell(const Cell *c) const
-{
-    if(c->type == "void")
-        return;
-
-    Cell* it = &std::find_if (adjList.begin(), adjList.end(),
-                             [=](std::pair<Cell, std::vector<Cell*>>& cell)
-    {return &cell.first == c;})->first;
-
-    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
-                             [=](std::vector<Cell>& cells)
-    {return cells[0].type == it->type;});
-
-    if(it2 == cellSelection->end())
-        throw std::invalid_argument("no cell found in cell-selection");
-
-    if(it2->size() != 0)
-    {
-        size_t rnd = rand()%it2->size();
-        (*it).CopyParams(&(*it2)[rnd]);
-    }
-    else
-    {
-        throw std::logic_error("unknown error");
+        std::regex pattern{R"***(\w+ +<= +\w\(\d+\) +\w+ \w\(\d+\);)***"};
+        std::regex pattern2{R"***(([\w\(\)]* *<= *[\w\(\)]*;))***"};
+        if(std::regex_match(aux, pattern))
+            c.readInstruction1(aux);
+        else if (aux.find("port map") != std::string::npos)
+            c.readInstruction2(aux);
+        else if(std::regex_match(aux, pattern2))
+            c.readInstruction3(aux);
     }
 
 
+    return is;
 }
 
-bool Circuit::ChangeCell(const Cell *c, double p) const
-{
-    if(c->type == "void")
-        return 0;
 
-    auto it = &std::find_if (adjList.begin(), adjList.end(),
-                             [=](std::pair<Cell, std::vector<Cell*>>& cell)
-    {return &cell.first == c;})->first;
-
-    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
-                             [=](std::vector<Cell>& cells)
-    {return cells[0].type == it->type;});
-
-    if(it2 == cellSelection->end())
-        throw std::invalid_argument("no cell found in cell-selection");
-
-    if(it2->size() != 0)
-    {
-        size_t cell = p*(it2->size()-1);
-
-        if((*it) != (*it2)[cell])
-        {
-            (*it).CopyParams(&(*it2)[cell]);
-            return true;
-        }
-        return false;
-
-    }
-    else
-    {
-        throw std::logic_error("unknown error");
-    }
-}
-
-void Circuit::ChangeCell(size_t i) const
-{
-    if(inputLists[i].first->type == "void")
-        return;
-
-    auto it = inputLists[i].first;
-    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
-                             [=](std::vector<Cell>& cells)
-    {return cells[0].type == inputLists[i].first->type;});
-
-    if(it2->size() != 0)
-    {
-        size_t cell = rand()%it2->size();
-
-        if((*it) != (*it2)[cell])
-            (*it).CopyParams(&(*it2)[cell]);
-
-    }
-    else
-    {
-        throw std::logic_error("unknown error");
-    }
-}
-
-bool Circuit::ChangeCell(size_t i, double p) const
-{
-    if(inputLists[i].first->type == "void")
-        return 0;
-
-    auto it = inputLists[i].first;
-    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
-                             [=](std::vector<Cell>& cells)
-    {return cells[0].type == inputLists[i].first->type;});
-
-    if(it2->size() != 0)
-    {
-        size_t cell = p*(it2->size()-1);
-
-        if((*it) != (*it2)[cell])
-        {
-            (*it).CopyParams(&(*it2)[cell]);
-            return true;
-        }
-        return false;
-
-    }
-    else
-    {
-        throw std::logic_error("unknown error");
-    }
-
-}
-
+//search inside the adjacency list a cell that have "name" as output pin
 std::list<std::pair<Cell, std::vector<Cell*>>>::iterator Circuit::searchOutputSingal(std::string name)
 {
-
     return std::find_if(adjList.begin(),
                         adjList.end(),
                         [=](std::pair<Cell, std::vector<Cell*>> p)
@@ -212,7 +59,7 @@ std::list<std::pair<Cell, std::vector<Cell*>>>::iterator Circuit::searchOutputSi
 }
 
 // returns the iterator of the type searched
-std::vector<std::vector<Cell>>::iterator Circuit::searchCellType(std::string type)
+std::vector<std::vector<Cell>>::const_iterator Circuit::searchCellType(std::string type)
 {
     for(size_t i = 0; i < cellSelection->size(); i++)
     {
@@ -293,6 +140,8 @@ bool Circuit::readInstruction1(std::string line)
     return true;
 }
 
+
+// 	U1 : OR2 port map (A1 => net_3, A2 => net_2, Z => net_8);
 bool Circuit::readInstruction2(std::string line)
 {
     // resize del vettore
@@ -386,6 +235,8 @@ bool Circuit::readInstruction2(std::string line)
     return true;
 }
 
+
+//	p_0_0 <= A(0) and B(0);
 bool Circuit::readInstruction3(std::string line)
 {
     std::string name = "port" + std::to_string(adjList.size());
@@ -427,28 +278,218 @@ bool Circuit::readInstruction3(std::string line)
 
 
 
-std::istream& operator>>(std::istream &is, Circuit &c)
+
+
+
+// ***************************************************************************************************************************
+//                                          CIRCUIT METHODS : SERVICES PART
+// ***************************************************************************************************************************
+
+
+//actually non used. Only for debug
+void Circuit::AssignRandom()
 {
 
-    std::string aux;
-    //int g = is.tellg();
-
-    while(std::getline(is>>std::ws, aux) && aux.find("begin") == std::string::npos);
-
-
-    while(std::getline(is>>std::ws, aux) && aux.find("end") == std::string::npos)
+    for (auto& it : adjList)
     {
-        std::regex pattern{R"***(\w+ +<= +\w\(\d+\) +\w+ \w\(\d+\);)***"};
-        std::regex pattern2{R"***(([\w\(\)]* *<= *[\w\(\)]*;))***"};
-        if(std::regex_match(aux, pattern))
-            c.readInstruction1(aux);
-        else if (aux.find("port map") != std::string::npos)
-            c.readInstruction2(aux);
-        else if(std::regex_match(aux, pattern2))
-            c.readInstruction3(aux);
+        for(size_t i = 0; i < cellSelection->size(); i++)
+        {
+            if(cellSelection->at(i)[0].type == it.first.type)
+            {
+                int j = rand()%cellSelection->at(i).size();
+                it.first.CopyParams(&cellSelection->at(i)[j]);
+            }
+        }
+    }
+
+    return;
+}
+
+// returns all the cells as input of given cell
+std::vector<const Cell *> Circuit::GetInputsOfCell(int cell) const
+{
+    std::vector<const Cell*> aux;
+    for(auto i : inputLists[cell].second)
+        aux.push_back(i);
+    return aux;
+}
+
+//same as above but implemented wiht pointer search
+std::vector<const Cell *> Circuit::GetInputsOfCell(const Cell *cell) const
+{
+    auto it = std::find_if(inputLists.begin(), inputLists.end(),
+                           [=](std::pair<Cell*, std::vector<Cell*>> c)
+    {return c.first == cell;});
+
+    if(it == inputLists.end())
+        throw std::invalid_argument("no matching cell in circuit");
+
+    std::vector<const Cell*> res;
+    for(auto& i : (*it).second)
+        res.push_back(i);
+    return res;
+}
+
+
+
+
+// returns all the cells as output of a given cell
+std::vector<const Cell *> Circuit::GetOutputsOfCell(int cell) const
+{
+    auto it = adjList.begin();
+    for(int i = 0; i < cell; i++)
+        it++;
+    std::vector<const Cell*> res;
+    for(auto& i : (*it).second)
+        res.push_back(i);
+    return res;
+}
+
+//same as above but implemented wiht pointer search
+std::vector<const Cell *> Circuit::GetOutputsOfCell(const Cell *cell) const
+{
+    auto it = std::find_if(adjList.begin(), adjList.end(), [=](std::pair<Cell, std::vector<Cell*>> c){return &c.first == cell;});
+    if(it == adjList.end())
+        throw std::invalid_argument("no matchin cell in circuit");
+
+    std::vector<const Cell*> res;
+    for(auto& i : (*it).second)
+        res.push_back(i);
+    return res;
+}
+
+
+//  follows the 4 types of described function ChangeCell: 2 based on
+//  random replacing and 2 based on p-value replacing.
+void Circuit::ChangeCell(const Cell *c) const
+{
+    if(c->type == "void")
+        return;
+
+    Cell* it = &std::find_if (adjList.begin(), adjList.end(),
+                             [=](std::pair<Cell, std::vector<Cell*>>& cell)
+    {return &cell.first == c;})->first;
+
+    const auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
+                             [=](const std::vector<Cell>& cells)
+    {return cells[0].type == it->type;});
+
+    if(it2 == cellSelection->end())
+        throw std::invalid_argument("no cell found in cell-selection");
+
+    if(it2->size() != 0)
+    {
+        size_t rnd = rand()%it2->size();
+        (*it).CopyParams(&(*it2)[rnd]);
+    }
+    else
+    {
+        throw std::logic_error("unknown error");
     }
 
 
-    return is;
 }
+
+bool Circuit::ChangeCell(const Cell *c, double p) const
+{
+    if(c->type == "void")
+        return 0;
+
+    auto it = &std::find_if (adjList.begin(), adjList.end(),
+                             [=](std::pair<Cell, std::vector<Cell*>>& cell)
+    {return &cell.first == c;})->first;
+
+    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
+                             [=](const std::vector<Cell>& cells)
+    {return cells[0].type == it->type;});
+
+    if(it2 == cellSelection->end())
+        throw std::invalid_argument("no cell found in cell-selection");
+
+    if(it2->size() != 0)
+    {
+        size_t cell = p*(it2->size()-1);
+
+        if((*it) != (*it2)[cell])
+        {
+            (*it).CopyParams(&(*it2)[cell]);
+            return true;
+        }
+        return false;
+
+    }
+    else
+    {
+        throw std::logic_error("unknown error");
+    }
+}
+
+void Circuit::ChangeCell(size_t i) const
+{
+    if(inputLists[i].first->type == "void")
+        return;
+
+    auto it = inputLists[i].first;
+    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
+                             [=](const std::vector<Cell>& cells)
+    {return cells[0].type == inputLists[i].first->type;});
+
+    if(it2->size() != 0)
+    {
+        size_t cell = rand()%it2->size();
+
+        if((*it) != (*it2)[cell])
+            (*it).CopyParams(&(*it2)[cell]);
+
+    }
+    else
+    {
+        throw std::logic_error("unknown error");
+    }
+}
+
+bool Circuit::ChangeCell(size_t i, double p) const
+{
+    if(inputLists[i].first->type == "void")
+        return 0;
+
+    auto it = inputLists[i].first;
+    auto it2 = std::find_if (cellSelection->begin(), cellSelection->end(),
+                             [=](const std::vector<Cell>& cells)
+    {return cells[0].type == inputLists[i].first->type;});
+
+    if(it2->size() != 0)
+    {
+        size_t cell = p*(it2->size()-1);
+
+        if((*it) != (*it2)[cell])
+        {
+            (*it).CopyParams(&(*it2)[cell]);
+            return true;
+        }
+        return false;
+
+    }
+    else
+    {
+        throw std::logic_error("unknown error");
+    }
+
+}
+
+double Circuit::GetAreaOccupation() const
+{
+    double area = 0;
+    //std::cout << "area occupation" << std::endl;
+    std::for_each(adjList.begin(), adjList.end(),
+                  [&](auto cellp)
+    {return area += cellp.first.area;});
+
+    return area;
+}
+
+
+
+
+
 

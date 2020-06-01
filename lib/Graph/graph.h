@@ -9,11 +9,11 @@
 template <class M > class Graph;
 
 //  ***********************************************************************************************************
-//  A graph data structure ford DAGs implemented as an interface. It uses a binary heap when creating a sorted
+//  A graph data structure for DAGs implemented as an interface. It uses a binary heap to create a sorted
 //  vector that is used to calculate the worst path.
-//  The two main methods of the class are the one that performs the topological sort and the one the calculate
-//  the distance. The second one is a revisited and simplified version of dijkstra that works with multisources
-//  DAGs. If n is the number of the nodes, the time cost of the topological sort is O(nlog(n)) and the one of
+//  The two main methods of the class are the one that performs the topological sort and the one that calculate
+//  the distance. The second one is a DAG-shortes-path that works with multisources DAGs.
+//  If n is the number of the nodes, the time cost of the topological sort is O(nlog(n)) and the one of
 //  the distance algorihtm is O(n*d) where d is the average density of the graph.
 //  The interface is not fully featured yet.
 //  ***********************************************************************************************************

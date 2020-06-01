@@ -16,15 +16,18 @@
 //  *****************************************************************************
 //  The class it's a input class for the circuit file.
 //  Stores the topology of the circuit inside a adjacency list of cells
-//  that contains the real cells used to deploy the circuit.
-//  there a matrix that contains all the cells availables to choose from
-//  in order to build the circuit
+//  that contains the real cells used to form the circuit.
+//  There a matrix (cell selection) that contains all the cells availables to choose
+//  from when building the circuit.
 //  It also has a rendoundant array that for each cells contains the
 //  cells that are connected in input. A sort of reverse adjacency list that
-//  helps to reduce the time complexity.
+//  helps to reduce the time complexity while searching cells.
 //  In attition to the common setters and getters it provides a method to
-//  randomly chance a specific cell: once it reads the type of the cell it
-//  select randomly a new cell among ones of the same type.
+//  chance a specific cell, there are 2 implementations available:
+//  - random: the cell is selected randomly among the cells of the same type
+//  - according to a value p: in input is given a value from 0 to 1 that will be
+//  converted into a number that represent the i entry of the vector that stores
+//  the cells of the same type of the one received as input
 //  *****************************************************************************
 
 class Circuit
@@ -34,7 +37,9 @@ class Circuit
 
 public:
 
-    Circuit(std::vector<std::vector<Cell>>* selection);
+    Circuit(const std::vector<std::vector<Cell>> *selection)
+        : cellSelection(selection)
+    {}
 
     double GetWorstCase();
     void AssignRandom();
@@ -53,19 +58,23 @@ public:
     void ChangeCell(size_t i) const;
     bool ChangeCell(size_t i, double p) const;
 
+    double GetAreaOccupation() const;
+
 
 private:
     mutable std::list<std::pair<Cell, std::vector<Cell*>>> adjList;
     std::vector<std::pair<Cell*, std::vector<Cell*>>> inputLists;
 
-    std::vector<std::vector<Cell>>* cellSelection;
+    const std::vector<std::vector<Cell>>* cellSelection;
+
+
 
     bool readInstruction1(std::string line);
     bool readInstruction2(std::string line);
     bool readInstruction3(std::string line);
 
     std::list<std::pair<Cell, std::vector<Cell*>>>::iterator searchOutputSingal(std::string name);
-    std::vector<std::vector<Cell>>::iterator searchCellType(std::string name);
+    std::vector<std::vector<Cell>>::const_iterator searchCellType(std::string name);
 
 };
 

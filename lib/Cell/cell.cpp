@@ -1,12 +1,21 @@
 #include "cell.h"
 
+
+
+// ***************************************************************************************************************************
+//                                                  CELL METHODS
+// ***************************************************************************************************************************
+
 std::istream& operator>>(std::istream &is, Cell &c)
 {
     std::string aux;
     int g = is.tellg();
     is >> c.name;
     //    if(c.name == "MX41X7")
-    //        std::cout << "aaaa";
+    //        std::cout << "d";
+    is >> aux >> c.area;
+
+
     while(std::getline(is>>std::ws, aux) && aux.find("leakage") == std::string::npos);
 
     Pin p;
@@ -60,18 +69,17 @@ std::istream& operator>>(std::istream &is, Cell &c)
                 c.timingInfo.back().pop_back();
             else
             {
-                //std::cout << "BBB£";
+                //std::cout << "ddd";
             }
         }
     }
-
-
     return is;
 }
 
 std::ostream& operator<<(std::ostream &os, const Cell &c)
 {
     os << c.name << "\n";
+    os << "\tarea: " << c.area << "\n";
     os << "\tleakage" << "\n";
     for(auto x : c.input)
         os << "\t" << x << "\n";
@@ -128,7 +136,19 @@ double Cell::GetTimingInfo(double intransit, double outCap, size_t output, size_
 }
 
 
-//-----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+// ***************************************************************************************************************************
+//                                          CELL TIMIING INFO METHODS
+// ***************************************************************************************************************************
 std::istream& operator>>(std::istream &is, CellTimingInfo& c)
 {
     is.flags(std::ios_base::fmtflags(is.flags()|std::ios::binary));
@@ -203,6 +223,7 @@ std::ostream& operator<<(std::ostream &os, CellTimingInfo &c)
     return os;
 }
 
+
 double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) const
 {
     //std::cout << "in_tr: " << std::setw(10) << inputTransition << " out_c: " << std::setw(10) << outCapacitance << " - ";
@@ -217,7 +238,7 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) c
     auto p = std::equal_range(values.begin(), values.end(), inputTransition, Comp{});
 
 
-    //find the two iterators that describes the entries of the matrix among which should stay the out capacitance
+    //find the two iterators that describes the entries of the matrix between which should stay the out capacitance
     double prevCap = 0, succCap = 0;
     double prevT = 0, succT = 0;
 
@@ -267,14 +288,17 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) c
     }
 
 
+    // calculate the final result
     double res =(outCapacitance - succCap)/(prevCap-succCap)*prevT -
             (outCapacitance - prevCap)/(prevCap-succCap)*succT;
     // std::cout << " res: " << res << std::endl << std::endl;
     return res;
 }
 
+
+//tests the getdelay function - for debug
 void CellTimingInfo::Test()
-{
+{  
     std::vector<std::vector<double>> tester
     {
         {0.0, 0.0002},
@@ -288,7 +312,6 @@ void CellTimingInfo::Test()
         {0.50, 0.0180},
         {0.50, 0.50}
     };
-    //double res = GetDelay(tester[0], tester.second);
 
     for(size_t i = 0; i < tester.size(); i++)
     {
@@ -298,10 +321,9 @@ void CellTimingInfo::Test()
 }
 
 
-
+// approx the input transition time to the values of this cell
 double CellTimingInfo::ApproxTransition(double transition) const
 {
-    // approx the input transition time to the values of this cell
 
     if(transition == 0)
         return values[0][inTransitIndex];
@@ -325,12 +347,13 @@ double CellTimingInfo::ApproxTransition(double transition) const
 
 
 
-//---------------------------------------------------------------------------------------------------------------
 
 
 
 
-
+// ***************************************************************************************************************************
+//                                                      PIN METHODS
+// ***************************************************************************************************************************
 std::istream& operator>>(std::istream &is, Pin &p)
 {
     is.flags(std::ios_base::fmtflags(is.flags()|std::ios::binary));

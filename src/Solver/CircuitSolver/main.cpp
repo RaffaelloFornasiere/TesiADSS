@@ -47,10 +47,10 @@ int main()
     // -----------------------------------------------------------------------------------------------------------------------------------
     //                                                              SETUP
     // -----------------------------------------------------------------------------------------------------------------------------------
-    //time_t start = clock();
+    time_t start = clock();
     srand(1);
 
-    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/multiplier11.vhdl", std::ios_base::in|std::ios_base::binary);
+    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.029.vhdl", std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
         throw std::invalid_argument("file del circuito inesistente2");
 
@@ -67,18 +67,21 @@ int main()
 
     std::cout << "Initialization done" << std::endl;
     size_t pop = 40;
-    BRKGAParams p (pop, c.GetNumOfCells(), 0.2*pop, 0.3*pop, 0.6, 1);
+    BRKGAParams p (pop, c.GetNumOfCells(), 0.2*pop, 0.3*pop, 0.6, 0);
     CircuitSolver var (&c, p, 0);
 
     std::cout << "first solution " << var.getWorstPathDistance() << std::endl;
 
 
-    var.setMaxGenerations(400);
+    var.setMaxGenerations(30);
     std::cout << "setting GA done" << std::endl;
 
     var.Evolve();
-    std::cout << var.BestSolution() << std::endl;
+    std::cout << "delay: " << var.BestSolution() << std::endl;
+    std::cout << "area: " << var.GetAreaOccupation() << std::endl;
 
+
+    std::cout << clock()-start << std::endl;
     return 0;
 }
 

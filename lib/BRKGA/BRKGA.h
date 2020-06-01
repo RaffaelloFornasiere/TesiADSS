@@ -120,16 +120,16 @@ bool BRKGA<Output, FType>::Evolve()
         double percentile = Percentile();
         if(reducing && percentile > 0.5 && percentile > lastPercentile)
         {
-            std::cout << "resizing...\t " << std::endl;
+//            std::cout << "resizing...\t " << std::endl;
             lastPercentile = percentile;
             pne -= kPne;
             pe  -= kPe;
             pm  -= kPm;
-            std::cout << "pne: " << pne
-                      << " pe: " << pe
-                      << " pm  " << pm
-                      << " min: "<< minSize
-                      << std::endl;
+//            std::cout << "pne: " << pne
+//                      << " pe: " << pe
+//                      << " pm  " << pm
+//                      << " min: "<< minSize
+//                      << std::endl;
             if(pne < minSize)
             {
                 pne = minSize-pm-pe;
@@ -142,7 +142,7 @@ bool BRKGA<Output, FType>::Evolve()
                 fitVect.erase(fitVect.end()-kPe-kPne-kPm, fitVect.end());
             }
             aux.resize(pne);
-            std::cout << "resized into: " << pne + pe + pm << " items " << std::endl;
+//            std::cout << "resized into: " << pne + pe + pm << " items " << std::endl;
         }
 
 //        for(auto& x : fitVect)
@@ -216,6 +216,7 @@ bool BRKGA<Output, FType>::Evolve()
         std::cout << "generation: " << generations << std::endl;
     }
     std::cout << "end" << std::endl;
+    return 0;
 }
 
 template<class Output, class FType>

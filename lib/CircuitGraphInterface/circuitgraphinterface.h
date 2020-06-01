@@ -7,11 +7,20 @@
 #include "../BRKGA/BRKGA.h"
 #include <thread>
 
+
 class CircuitSolver;
 enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
 
 
 
+
+// *************************************************************************************
+// This class represent a node of the circuit. Each cell of the circuit is formed by
+// a number of circuit nodes equal to the number of inputs plus the number of outputs.
+// Each node has the task to store and calculate the delays.
+// This class is the abstract class which is used by the solver. The following two classes
+// inherit form this one and specialize the member methods to calcualte the delays
+// *************************************************************************************
 class CircuitNode : public GraphNode<double>
 {
     friend std::ostream& operator<<(std::ostream& os, const CircuitNode& cn);
@@ -33,7 +42,7 @@ public:
 
     void SetInTransition(double value) {if(value > worstInRTransit) worstInRTransit = value;}
 
-    void SetCapacity(double value){outCapacity = value;}
+    void SetCapacity(double value) {outCapacity = value;}
 
     //void AddNeighbor(GraphNode<double> *a) override;
     virtual void CalcOutputCap() = 0;
@@ -92,8 +101,21 @@ private:
 
 
 
-
-
+// ************************************************************************************
+// the class provides the solver for the circuit delay problem
+// it ihnerits from the two interfaces graph and BRKGA. this solver
+// makes them coperate to solve the problem.
+// The Graph provides the data structure which represent the circuit
+// so the solver then can call TopologicalSort and GetWorstPathDistance
+// in oreder to compute the delay of the circuit.
+// The BRKGA provides the main function Evolve(). All the genetic algorithm
+// stuff is performed inside BRKGA. According to the BRKGA guide, only the
+// method Decode() should be overrided, but, due to keep interface more
+// portable and because i added additional features to the original version
+// of BRKGA, 2 others hotspots were added. One is the StopCriteria() an the other
+// is Percentile() which is used to perform population resiszing to make
+// the solution converge faster.
+// ************************************************************************************
 
 
 class CircuitSolver : public Graph<double>, public BRKGA<Circuit, double>
@@ -117,12 +139,14 @@ public:
     void Decode() override;
     bool StopCriteria() override;
     double Percentile() override;
+    //double BestSolution() const override {return fit_1(fitVect.front().first);}
     // *****************************************
 
 
     size_t getMaxGenerations() const {return maxGenerations;}
     void setMaxGenerations(const size_t &value){maxGenerations = value;}
-    double BestSolution() const override {return fit_1(fitVect.front().first);}
+
+    double GetAreaOccupation() {return circuit->GetAreaOccupation();}
 
 private:
 
@@ -134,8 +158,11 @@ private:
     //Cell {input_1, input_2 ... input_n, output_1 ... output_n}
     std::unordered_map<CircuitNode*, std::pair<const Cell*, int>>  map1;
     std::unordered_map<const Cell*, std::vector<CircuitNode*>> map2;
-
     const Circuit* circuit;
+
+
+
+
 
 
     size_t maxGenerations;
