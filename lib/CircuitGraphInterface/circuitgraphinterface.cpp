@@ -286,8 +286,8 @@ void CircuitSolver::Decode()
         //time_t start = clock();
         std::vector<double> alleles = hypercube[item.second];
 
-//        for(auto& i : alleles)
-//            std::cout << i << " ";
+        //        for(auto& i : alleles)
+        //            std::cout << i << " ";
 
         for(size_t i = 0; i < circuit->GetNumOfCells(); i++)
         {
@@ -302,13 +302,32 @@ void CircuitSolver::Decode()
 
 bool CircuitSolver::StopCriteria()
 {
-    //std::cout << BestSolution() << std::endl;
-    return generations >= maxGenerations;
+    static double lastBest = 0;
+    static size_t counter = 0;
+    std::cout << BestSolution() << std::endl;
+    if(fitVect.front().first > lastBest)
+    {
+        lastBest = fitVect.front().first;
+        counter = 0;
+    }
+    else
+    {
+        counter++;
+    }
+    if(counter > 100)
+        return true;
+    return  false;
+    //return generations >= maxGenerations;
 }
 
 double CircuitSolver::Percentile()
 {
     return std::floor(static_cast<double>(generations)/maxGenerations*100);
+}
+
+double CircuitSolver::BestSolution() const
+{
+    return fit_1(fitVect.front().first);
 }
 
 

@@ -65,20 +65,20 @@ int main()
     inFile2 >> c;
     //outFile << c; // only for graphing
 
-    std::cout << "Initialization done" << std::endl;
-    size_t pop = 40;
-    BRKGAParams p (pop, c.GetNumOfCells(), 0.2*pop, 0.3*pop, 0.6, 0);
-    CircuitSolver var (&c, p, 0);
+    c.AssignAll(0.1);
 
-    std::cout << "first solution " << var.getWorstPathDistance() << std::endl;
+    //std::cout << "Initialization done" << std::endl;
+    size_t pop = 30;
+    BRKGAParams p (pop, c.GetNumOfCells(), 0.2*pop, 0.3*pop, 0.6, 1);
+    CircuitSolver var (&c, p, 1);
 
-
-    var.setMaxGenerations(30);
-    std::cout << "setting GA done" << std::endl;
-
+    size_t gens = 30;
+    var.setMaxGenerations(gens);
+    std::cout << "generations: " << gens << std::endl;
+    std::cout << p << std::endl;
     var.Evolve();
-    std::cout << "delay: " << var.BestSolution() << std::endl;
-    std::cout << "area: " << var.GetAreaOccupation() << std::endl;
+    //std::cout << "delay: " << var.BestSolution() << std::endl;
+    //std::cout << "area: " << var.GetAreaOccupation() << std::endl;
 
 
     std::cout << clock()-start << std::endl;

@@ -139,6 +139,7 @@ public:
     void Decode() override;
     bool StopCriteria() override;
     double Percentile() override;
+    double BestSolution() const override;
     //double BestSolution() const override {return fit_1(fitVect.front().first);}
     // *****************************************
 

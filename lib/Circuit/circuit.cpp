@@ -305,6 +305,12 @@ void Circuit::AssignRandom()
     return;
 }
 
+void Circuit::AssignAll(double p)
+{
+    for(size_t i = 0; i < inputLists.size(); i++)
+        ChangeCell(i, p);
+}
+
 // returns all the cells as input of given cell
 std::vector<const Cell *> Circuit::GetInputsOfCell(int cell) const
 {

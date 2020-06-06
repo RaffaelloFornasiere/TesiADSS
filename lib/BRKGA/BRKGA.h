@@ -10,12 +10,27 @@
 
 struct BRKGAParams
 {
+private:
+    friend std::ostream& operator<<(std::ostream &os, const BRKGAParams &bp)
+    {
+        os << "init_pop_size: " << bp.popSize
+           << " - init_pop_elite: " << bp.pe
+           << " - init_pop_mut: " << bp.pm
+           << " - init_rho_e: " << bp.rho_e
+           << " - reducing : " << std::boolalpha << bp.reducing;
+        return os;
+    }
+
+public:
     BRKGAParams(size_t popSize, size_t nAlleles, size_t pe, size_t pm, double rho_e, bool reducing = true)
         : popSize(popSize), nAlleles(nAlleles), pe(pe), pm(pm), rho_e(rho_e), reducing(reducing){}
+
     size_t popSize, nAlleles, pe, pm;
     double rho_e;
     bool reducing;
 };
+
+
 
 
 
@@ -55,6 +70,8 @@ public:
     virtual FType BestSolution() const {return fitVect.front().first;}
 
     size_t PopSize() const {return pe + pm + pne;}
+
+    void SimpleTest();
 
 protected:
     void Crossover(size_t p1Pos, size_t p2Pos,  std::vector<std::vector<double>>::iterator son);
@@ -213,10 +230,22 @@ bool BRKGA<Output, FType>::Evolve()
 //        }
 //        std::cout<<std::endl;
         generations++;
-        std::cout << "generation: " << generations << std::endl;
+        //std::cout << "generation: " << generations << std::endl;
     }
     std::cout << "end" << std::endl;
     return 0;
+}
+
+template<class Output, class FType>
+void BRKGA<Output, FType>::SimpleTest()
+{
+    InitializePopulation();
+//    std::cout << "population initialized" << std::endl;
+
+    Decode();
+//    std::cout << "\tpopulation decoded" << std::endl;
+
+    Classify();
 }
 
 template<class Output, class FType>

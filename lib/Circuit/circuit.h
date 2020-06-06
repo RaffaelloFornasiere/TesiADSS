@@ -43,6 +43,7 @@ public:
 
     double GetWorstCase();
     void AssignRandom();
+    void AssignAll(double p);
 
     size_t GetNumOfCells() const {return adjList.size();}
     const Cell* GetCell(int i) const {return inputLists[i].first;}
