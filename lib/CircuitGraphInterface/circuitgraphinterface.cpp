@@ -125,7 +125,12 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
     : BRKGA(params), circuit(c)
 {
     // for each cell in the circuit, it will create some circuit nodes
+    map1.clear();
+    map2.clear();
 
+
+
+    int in = 0, out = 0;
     for(size_t i = 0; i < c->GetNumOfCells(); i++)
     {
         const Cell* aux = c->GetCell(i);
@@ -134,14 +139,18 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
         size_t inputs = aux->GetNumOfInputs();
         size_t outputs = aux->GetNumOfOutputs();
 
+       // std::cout << aux->getName() << " " << inputs << " " << outputs << std::endl;
+
         //create the input circuitnodes
         for(size_t j = 0; j < inputs; j++)
         {
             if(!init)
                 circuit->ChangeCell(i, 0);
             double cap = aux->GetInPinCapacity(j);
-            vect.emplace_back(new InputCircuitNode(this, cap, "in" + std::to_string(j) + "_" + aux->getName()));
+            vect.emplace_back(new InputCircuitNode(this, cap, "in" + std::to_string(in)));
+            //std::cout << vect.back()->getName() << std::endl;
             map1.insert(std::make_pair(vect.back(), std::make_pair(aux, j)));
+            in++;
         }
 
         //create the output circuitnodes
@@ -150,8 +159,10 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
             if(!init)
                 circuit->ChangeCell(i, 0);
             double cap = aux->GetInPinCapacity(j);
-            vect.emplace_back(new OutputCircuitNode(this, cap, "out"+std::to_string(j)+"_"+aux->getName()));
+            vect.emplace_back(new OutputCircuitNode(this, cap, "out"+std::to_string(out)));
+            //std::cout << vect.back()->getName() << std::endl;
             map1.insert(std::make_pair(vect.back(), std::make_pair(aux, inputs + j)));
+            out++;
         }
         if(vect.size() != 0)
             map2.insert(std::make_pair(aux, vect));
@@ -166,23 +177,54 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
         }
     }
 
+   // std::cout << "\tnodes created" << std::endl;
+//    for(auto& i : map1)
+//    {
+//        //std::cout << *i.first << std::endl;
+//    }
+//    std::vector<CircuitNode*> nodes;
+//    for(auto& i : map1)
+//    {
+//        nodes.push_back(i.first);
+//    }
+//    std::cout << "edgesmmmmmmmmmmmmmmm\n";
     CreateEdges();
+    //std::cout << "\tedges created" << std::endl;
+
+//    std::sort(nodes.begin(), nodes.end(),
+//              [&](auto& n1, auto& n2)
+//    {
+//        if(n1->getName() != n2->getName())
+//            return  n1->getName() < n2->getName();
+//        else
+//        {
+//            return n1->adj.front()->getName() < n2->adj.front()->getName();
+//        }
+//    });
 
     for(auto& i : map1)
     {
+        //std::cout << *i << std::endl ;
         adjList.push_back(i.first);
     }
+   // std::cout << "\tassignment done" << std::endl;
+
+//    for(auto& i : adjList)
+//    {
+//       //std::cout << *i << std::endl ;
+//    }
+
+
+    //std::cout << map1.size() << std::endl;
 
     TopologicalSort();
+//    for(auto& i : adjList)
+//    {
+//     //   std::cout << *i << std::endl ;
+//    }
+    Setup();
 
-    for(auto& x : map2)
-    {
-        circuit->ChangeCell(x.first, 0);
-        for(auto& y : x.second)
-        {
-            y->CalcOutputCap();
-        }
-    }
+  //  std::cout << "\tend constructor " << std::endl;
 
     return;
 }
@@ -190,7 +232,11 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
 CircuitSolver::~CircuitSolver()
 {
     for(auto& i : map1)
+    {
         delete i.first;
+    }
+    map1.clear();
+    map2.clear();
 }
 
 void CircuitSolver::Setup()
@@ -267,7 +313,6 @@ std::ostream& operator<<(std::ostream &os, const CircuitNode &cn)
         os /*<< "\"" << cn.name << "\""*/
                 << "->\"" << i->getName() << "\"";
     }
-    os << std::endl;
     return  os;
 }
 
@@ -302,9 +347,8 @@ void CircuitSolver::Decode()
 
 bool CircuitSolver::StopCriteria()
 {
-    static double lastBest = 0;
-    static size_t counter = 0;
-    std::cout << BestSolution() << std::endl;
+
+    //std::cout << BestSolution() << std::endl;
     if(fitVect.front().first > lastBest)
     {
         lastBest = fitVect.front().first;
@@ -314,7 +358,7 @@ bool CircuitSolver::StopCriteria()
     {
         counter++;
     }
-    if(counter > 100)
+    if(counter > 20)
         return true;
     return  false;
     //return generations >= maxGenerations;

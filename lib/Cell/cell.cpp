@@ -213,7 +213,7 @@ std::ostream& operator<<(std::ostream &os, CellTimingInfo &c)
 {
     os << "\t\t" << c.infoType << " (A)\n";
     os << "\t\t\tinput_net_transition total_output_net_capacitance time" << "\n";
-    for(auto x : c.values)
+    for(auto& x : c.values)
     {
         os << "\t\t\t";
         for(auto y : x)

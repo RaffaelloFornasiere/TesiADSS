@@ -33,7 +33,7 @@ public:
     CircuitNode(CircuitSolver* it, std::string name)
         : GraphNode<double>(name), it(it)
     {worstInRTransit = 0; worstOutRTransit = 0;}
-    virtual ~CircuitNode(){}
+    virtual ~CircuitNode() override {adj.clear();} ;
 
 
     virtual double Distance(GraphNode* a) override;
@@ -49,7 +49,6 @@ public:
 
     virtual double GetWorstDelay() = 0; //{return delay;}
     virtual double GetWorstTransition() = 0; //{return worstOutRTransit;}
-
 
 protected:
     CircuitSolver* it;
@@ -70,7 +69,7 @@ public:
         : CircuitNode(it, capacity, name) {}
     InputCircuitNode(CircuitSolver* it, std::string name)
         : CircuitNode(it, name){}
-    ~InputCircuitNode() {}
+    ~InputCircuitNode() override {}
 
     double GetWorstDelay() override {return 0;}
     double GetWorstTransition() override{return worstInRTransit;}
@@ -88,7 +87,7 @@ public:
     {delayUpdated = transitionUpdated = false;}
     OutputCircuitNode(CircuitSolver* it, std::string name)
         : CircuitNode(it, name){}
-    ~OutputCircuitNode(){}
+    ~OutputCircuitNode() override {}
 
     double GetWorstDelay() override;
     double GetWorstTransition() override;
@@ -118,7 +117,7 @@ private:
 // ************************************************************************************
 
 
-class CircuitSolver : public Graph<double>, public BRKGA<Circuit, double>
+class CircuitSolver : public Graph<double>, public BRKGA<std::string, double>
 {
     friend std::ostream& operator<<(std::ostream& os, const CircuitSolver& cg);
     friend class CircuitNode;
@@ -127,6 +126,7 @@ class CircuitSolver : public Graph<double>, public BRKGA<Circuit, double>
 public:
     CircuitSolver(const Circuit* c, BRKGAParams params, bool init = 0);
     ~CircuitSolver();
+
 
 
     // circuit
@@ -160,9 +160,6 @@ private:
     std::unordered_map<CircuitNode*, std::pair<const Cell*, int>>  map1;
     std::unordered_map<const Cell*, std::vector<CircuitNode*>> map2;
     const Circuit* circuit;
-
-
-
 
 
 

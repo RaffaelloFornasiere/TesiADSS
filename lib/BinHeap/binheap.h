@@ -58,18 +58,20 @@ public:
     bool DecreaseKey(BinHeapNode<T,K>* n, K newKey);
     bool IncreaseKey(BinHeapNode<T,K>* n, K newKey);
     bool Empty() const {return vect.size() == 0;}
-    bool Contains(BinHeapNode<T,K>* n) {return pos.end() != pos.find(n);}
+    bool Contains(BinHeapNode<T,K>* n);
     bool DeleteElement(BinHeapNode<T,K>* n);
 
 
     std::pair<T,K> Front();    
     BinHeapNode<T,K>* Push(T item, K key);
 
+    bool CheckCollisions();
+
     void SetCompare(const std::function<bool(K, K)> &value);
 
     inline static const std::function<bool(K, K)> minHeap = [](K k1, K k2){return k1 > k2;};
     inline static const std::function<bool(K, K)> maxHeap = [](K k1, K k2){return k1 < k2;};
-
+    std::vector<BinHeapNode<T,K>*> vect;
 private:
     // to get index of parent of node at index i
     int parent(int i) { return (i-1)/2; }
@@ -85,7 +87,7 @@ private:
     std::function<bool(K, K)> compare;
 
     std::unordered_map<BinHeapNode<T,K>*, int> pos;
-    std::vector<BinHeapNode<T,K>*> vect;
+
 };
 #endif // BINARYHEAP_H
 
@@ -103,8 +105,10 @@ std::pair<T,K> BinHeap<T,K>::Pop()
 {
     std::pair<T,K> res = std::make_pair(vect.front()->item, vect.front()->key);
     BinHeapNode<T,K>* ptr = vect.front();
+    pos.erase(ptr);
     vect.front() = vect.back();
     delete ptr;
+    ptr = nullptr;
     vect.pop_back();
     Heapify(0);
     return res;
@@ -127,6 +131,17 @@ BinHeapNode<T, K> *BinHeap<T, K>::Push(T item, K key)
     }
 
     return vect[i];
+}
+
+template<class T, class K>
+bool BinHeap<T,K>::CheckCollisions()
+{
+    for(size_t i = 0; i < pos.size(); i++)
+    {
+        size_t count = pos.bucket_size(i);
+        if(count > 0)
+        std::cout << "bucket:size " << count << std::endl;
+    }
 }
 
 template<class T, class K>
@@ -188,6 +203,12 @@ bool BinHeap<T,K>::IncreaseKey(BinHeapNode<T, K> *n, K newKey)
         i = parent(i);
     }
     return 1;
+}
+
+template<class T, class K>
+bool BinHeap<T,K>::Contains(BinHeapNode<T, K> *n)
+{
+    return pos.find(n) != pos.end();
 }
 
 template<class T, class K>

@@ -51,5 +51,6 @@ int main()
 
         std::cout<< "sorting: " << std::setw(10) << n <<  std::setw(5) << "\telements in O(nlog(n)) required: " << std::setw(8) <<  clock() - start << " [ms] " << std::endl;
     }
+
     return 0;
 }

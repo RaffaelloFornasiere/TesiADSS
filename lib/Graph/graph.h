@@ -34,11 +34,11 @@ public:
     virtual M Distance(GraphNode* a) {return adj.size();}
     std::string getName() const {return name;}
     virtual void AddNeighbor(GraphNode* a){adj.push_back(a);}
-
-
-protected:
     std::string name;
     std::vector<GraphNode*> adj;
+
+protected:
+
 
 private:
     BinHeapNode<GraphNode*, M>* heapPtr;
@@ -93,38 +93,120 @@ std::ostream& operator<<(std::ostream &os, const Graph<M> &g)
 template<class M>
 void Graph<M>::TopologicalSort()
 {
-    BinHeap<GraphNode<M>*, M> heap(adjList.size(), BinHeap<GraphNode<M>*,M>::minHeap);
+    //std::cout << "\t\t adjsize: "<<adjList.size() <<std::endl;
+
+    int i = 0,j = 0,k =0, t = 0;
+    BinHeap<GraphNode<M>*, M> *heap = new BinHeap<GraphNode<M>*, M>(adjList.size(), BinHeap<GraphNode<M>*, M>::minHeap);
     for(GraphNode<M>* x : adjList)
-    {
-        if(!heap.Contains(x->heapPtr))
-            x->heapPtr = heap.Push(x, 0);
+    {     
+        if(!heap->Contains(x->heapPtr))
+        {
+            x->heapPtr = heap->Push(x, 0);
+            i++;
+        }
+        else
+        {
+            t = 0;
+        }
 
         for(GraphNode<M>* y : x->adj)
         {
-            if(heap.Contains(y->heapPtr))
-                heap.IncreaseKey(y->heapPtr, 1);
+          //  std::cout << "\t" << y->name;
+            if(heap->Contains(y->heapPtr))
+            {
+               // std::cout << "c" << std::endl;
+                heap->IncreaseKey(y->heapPtr, 1);
+               j++;
+            }
             else
-                y->heapPtr = heap.Push(y, 1);
+            {
+              //  std::cout << "nc" << std::endl;
+                y->heapPtr = heap->Push(y, 1);
+                 k++;
+            }
         }
     }
 
+    //std::cout << "\t\theap created, size: " << heap->vect.size() << std::endl;
 
+    //std::cout << i << " " << j << " "<< k << " " <<std::endl;
+ /*   i = j = k = 0;
 
-
-    while(!heap.Empty())
+    std::vector<int> keys1;
+    while(!heap->Empty())
     {
-        if(heap.Front().second != 0)
-            throw std::logic_error("the graph is not a DAG");
-        std::pair<GraphNode<M>*, M> e = heap.Front();
+        keys1.push_back(heap->Front().second);
+        heap->Pop();
+    }
+
+    for(GraphNode<M>* x : adjList)
+    {
+        if(!heap->Contains(x->heapPtr))
+        {
+            x->heapPtr = heap->Push(x, 0);
+            i++;
+        }
+
+        std::cout << x->adj.size()
+                  << " " << *x
+                  << std::endl;
+
+        for(GraphNode<M>* y : x->adj)
+        {
+            std::cout << "\t" << y->name;
+            if(heap->Contains(y->heapPtr))
+            {
+                std::cout << "c" << std::endl;
+                heap->IncreaseKey(y->heapPtr, 1);
+                j++;
+            }
+            else
+            {
+                std::cout << "nc" << std::endl;
+                y->heapPtr = heap->Push(y, 1);
+                k++;
+            }
+        }
+    }
+    std::cout << i << " " << j << " "<< k << " " << std::endl;
+
+
+*/
+//    for(GraphNode<M>* x : adjList)
+//    {
+//        if(!heap->Contains(x->heapPtr))
+//            x->heapPtr = heap->Push(x, 0);
+
+//        for(GraphNode<M>* y : x->adj)
+//        {
+//            if(heap->Contains(y->heapPtr))
+//                heap->IncreaseKey(y->heapPtr, 1);
+//            else
+//                y->heapPtr = heap->Push(y, 1);
+//        }
+//    }
+ //   std::vector<int> keys2;
+    while(!heap->Empty())
+    {
+        //std::cout << heap->Front().first->name << " "<< heap->Front().second << std::endl;
+//        keys2.push_back(heap->Front().second);
+        if(heap->Front().second != 0.0)
+        {
+            heap->Front();
+            //throw std::logic_error("the graph is not a DAG");
+        }
+        std::pair<GraphNode<M>*, M> e = heap->Front();
         sorted.push_back(e.first);
         for(GraphNode<M>* x : e.first->adj)
         {
-            heap.DecreaseKey(x->heapPtr, 1);
+            heap->DecreaseKey(x->heapPtr, 1);
         }
-        heap.Pop();
-    }
-    //std::cout << "heap empty" << std::endl;
 
+        heap->Pop();
+
+    }
+
+    delete heap;
     return;
 }
 

@@ -28,6 +28,8 @@ public:
     size_t popSize, nAlleles, pe, pm;
     double rho_e;
     bool reducing;
+    double ppe;
+    double ppm;
 };
 
 
@@ -44,17 +46,18 @@ public:
 
     BRKGA(size_t popSize, size_t nAlleles, size_t pe, size_t pm, double rho_e, bool reducing = true)
         : hypercube(popSize, std::vector<double>(nAlleles)), fitVect(popSize), pe(pe), pm(pm),
-          pne(popSize-pe -pm), n(nAlleles), rho_e(rho_e)
+          pne(popSize-pe -pm), nAlleles(nAlleles),  popSize(popSize),rho_e(rho_e)
     {
         //std::cout << "rand max: " << RAND_MAX << std::endl;
         for(size_t i = 0; i < popSize; i++)
         {
             fitVect[i].second = i;
         }
-        minSize = std::floor(0.2*PopSize());
-        kPne = std::floor(0.1*pne);
-        kPe = std::floor(0.1*pe);
-        kPm = std::floor(0.1*pm);
+        lastBest = 0;
+        counter = 0;
+        ppe = double(pe)/popSize;
+        ppm = double(pm)/popSize;
+        minSize = std::max(1.0/ppe +1, 1.0/ppm +1);
         this->reducing = reducing;
     }
     virtual ~BRKGA(){}
@@ -73,10 +76,13 @@ public:
 
     void SimpleTest();
 
+    void SetParams(BRKGAParams p);
+    void Reset();
+
+
 protected:
     void Crossover(size_t p1Pos, size_t p2Pos,  std::vector<std::vector<double>>::iterator son);
     void InitializePopulation();
-
     void Classify();
 
     std::vector<std::vector<double>> hypercube;
@@ -85,7 +91,8 @@ protected:
     size_t pe;
     size_t pm;
     size_t pne;
-    size_t n;
+    size_t nAlleles;
+    size_t popSize;
     double rho_e;
     bool reducing;
 
@@ -93,15 +100,18 @@ protected:
 
     //reducing parameters
     double minSize;
-    double kPne;
-    double kPe;
-    double kPm;
+    double ppe;
+    double ppm;
 
 
 
 
     double lastPercentile;
-    //Output& out;
+    size_t counter;
+    double lastBest;
+
+    bool traking;
+    Output out;
 };
 
 
@@ -131,22 +141,22 @@ bool BRKGA<Output, FType>::Evolve()
     lastPercentile = 0;
 
     generations = 0;
-    std::vector<std::vector<double>> aux( pne, std::vector<double>(n) );
+    std::vector<std::vector<double>> aux(pne, std::vector<double>(nAlleles));
     while(!StopCriteria())
     {
         double percentile = Percentile();
         if(reducing && percentile > 0.5 && percentile > lastPercentile)
         {
 //            std::cout << "resizing...\t " << std::endl;
+            double pReducing = (percentile-lastPercentile)/100.0;
             lastPercentile = percentile;
-            pne -= kPne;
-            pe  -= kPe;
-            pm  -= kPm;
-//            std::cout << "pne: " << pne
-//                      << " pe: " << pe
-//                      << " pm  " << pm
-//                      << " min: "<< minSize
-//                      << std::endl;
+            popSize = static_cast<size_t>((1-pReducing)*popSize);
+            pe = ppe*popSize;
+            pm = ppm*popSize;
+            if(pne < popSize - pe - pm)
+                pe++;
+            pne = popSize - pe - pm;
+
             if(pne < minSize)
             {
                 pne = minSize-pm-pe;
@@ -156,10 +166,14 @@ bool BRKGA<Output, FType>::Evolve()
             }
             else
             {
-                fitVect.erase(fitVect.end()-kPe-kPne-kPm, fitVect.end());
+                size_t rubbish = fitVect.size() - popSize;
+                fitVect.erase(fitVect.end() - rubbish, fitVect.end());
             }
-            aux.resize(pne);
-//            std::cout << "resized into: " << pne + pe + pm << " items " << std::endl;
+            aux.resize(pne, std::vector<double>(nAlleles));
+            std::cout << " pop size: " << popSize
+                      << " pe: " << pe
+                      << " pm: " << pm
+                      << " pne: " << pne << " ";
         }
 
 //        for(auto& x : fitVect)
@@ -173,24 +187,24 @@ bool BRKGA<Output, FType>::Evolve()
 
 //        }
 
-        for(size_t i = 0; i < aux.size(); ++i)
+        for(size_t i = 0; i < pne; ++i)
         {
             //takes randomly two parents: form elite and non elite
             size_t eIndex = rand()%pe;
-            size_t neIndex = rand()%(fitVect.size()-pe)+pe;
+            size_t neIndex = rand()%(popSize-pe)+pe;
 
             // takes the correspondent index inside the hypercube
             auto parent1 = hypercube[fitVect[eIndex].second];
             auto parent2 = hypercube[fitVect[neIndex].second];
 
             // crossover
-            for(size_t j = 0 ; j < n; ++j)
+            for(size_t j = 0 ; j < nAlleles; ++j)
             {
                 double p = static_cast<double>(rand())/static_cast<double>(RAND_MAX);
                 aux[i][j] = (p < rho_e)?parent1[j]:parent2[j];
             }
         }
-        for(size_t i = 0; i < aux.size(); i++)
+        for(size_t i = 0; i < pne; i++)
         {
             size_t item = fitVect[i+pe].second;
             hypercube[item] = aux[i];
@@ -198,7 +212,7 @@ bool BRKGA<Output, FType>::Evolve()
 
         for(size_t i = 0; i < pm; ++i)
         {
-            size_t mutantIndex = fitVect[fitVect.size() - pm + i].second;
+            size_t mutantIndex = fitVect[popSize - pm + i].second;
 
             for(auto& x : hypercube[mutantIndex])
                 x = static_cast<double>(rand())/RAND_MAX;
@@ -230,9 +244,9 @@ bool BRKGA<Output, FType>::Evolve()
 //        }
 //        std::cout<<std::endl;
         generations++;
-        //std::cout << "generation: " << generations << std::endl;
+        out = BestSolution();
     }
-    std::cout << "end" << std::endl;
+    //std::cout << "end" << std::endl;
     return 0;
 }
 
@@ -246,6 +260,35 @@ void BRKGA<Output, FType>::SimpleTest()
 //    std::cout << "\tpopulation decoded" << std::endl;
 
     Classify();
+}
+
+template<class Output, class FType>
+void BRKGA<Output, FType>::SetParams(BRKGAParams p)
+{
+    popSize = p.popSize;
+    nAlleles = p.nAlleles;
+    fitVect.resize(popSize);
+    for(size_t i = 0; i < popSize; i++)
+    {
+        fitVect[i].second = i;
+    }
+    hypercube.resize(popSize, std::vector<double>(nAlleles));
+    pe = p.pe;
+    pm = p.pm;
+    pne = popSize - pe - pm;
+    ppe = p.ppe;
+    ppm = p.ppm;
+    minSize = std::max(1.0/ppe +1, 1.0/ppm +1);
+    reducing = p.reducing;
+}
+
+template<class Output, class FType>
+void BRKGA<Output, FType>::Reset()
+{
+    fitVect.clear();
+    hypercube.clear();
+    counter = 0;
+    lastBest = 0;
 }
 
 template<class Output, class FType>
@@ -267,6 +310,5 @@ void BRKGA<Output, FType>::Classify()
         return p1.first > p2.first;
     });
 }
-
 
 

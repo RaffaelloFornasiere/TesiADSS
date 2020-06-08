@@ -34,6 +34,9 @@ class Circuit
 {
     friend std::istream& operator>>(std::istream& is, Circuit& c);
     friend std::ostream& operator<<(std::ostream& os, const Circuit& c);
+    friend bool operator==(const Circuit& c1, const Circuit& c2);
+    friend bool operator!=(const Circuit& c1, const Circuit& c2) {return !(c1 == c2);}
+
 
 public:
 
@@ -41,9 +44,15 @@ public:
         : cellSelection(selection)
     {}
 
+    Circuit(const std::vector<std::vector<Cell>> *selection, std::istream& is)
+        : cellSelection(selection)
+    {
+        is >> *this;
+    }
+
     double GetWorstCase();
     void AssignRandom();
-    void AssignAll(double p);
+    void AssignAll(double p) const;
 
     size_t GetNumOfCells() const {return adjList.size();}
     const Cell* GetCell(int i) const {return inputLists[i].first;}

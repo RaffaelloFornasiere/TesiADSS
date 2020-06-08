@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
+#include <iomanip>
 #include <vector>
 #include "../../../lib/Circuit/circuit.h"
 #include <queue>
@@ -34,7 +36,117 @@ std::vector<std::vector<Cell>> readCellLibrary(std::string filename);
 // ************************************************************************
 
 
+void PopulationTuner(BRKGAParams p, std::vector<std::vector<Cell>>* selection, size_t maxPopSize, size_t step)
+{
+    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.001.vhdl", std::ios_base::in|std::ios_base::binary);
+    if(!inFile2)
+        throw std::invalid_argument("file del circuito inesistente2");
 
+    std::ofstream outFileGraph("../../../files/data-output.txt", std::ios_base::out|std::ios_base::binary);
+
+    Circuit c(selection);
+    inFile2 >> c;
+    inFile2.close();
+
+    size_t ip = p.popSize;
+    CircuitSolver s(&c, p, 0);
+    time_t start;
+    for(size_t pop = ip; pop < maxPopSize; pop += step)
+    {
+        p.popSize = pop;
+        p.pe = pop*p.ppe;
+        p.pm = pop*p.ppm;
+
+        std::cerr << std::setw(5) << p.popSize << " "
+                  << std::setw(5) << p.pe << " "
+                  << std::setw(5) << p.pm << " "
+                  << std::setw(8) << p.rho_e << " ";
+        s.Reset();
+        s.SetParams(p);
+        start = clock();
+        s.Evolve();
+        std::cerr << std::setw(10) << s.BestSolution() << std::setw(5) << " " << clock()-start << std::endl;
+    }
+
+}
+
+
+
+void EliteMutantTuner(BRKGAParams p, std::string fileDir, std::vector<std::vector<Cell>>* selection, double finalPpe, double finalPpm, double step)
+{
+    std::ifstream inFile2 (fileDir, std::ios_base::in|std::ios_base::binary);
+    if(!inFile2)
+        throw std::invalid_argument("file del circuito inesistente2");
+
+    std::ofstream outFileGraph("../../../files/data-output.txt", std::ios_base::out|std::ios_base::binary);
+
+    Circuit c(selection);
+    inFile2 >> c;
+    inFile2.close();
+    double ippm = p.ppm;
+    CircuitSolver s(&c, p, 0);
+    time_t start;
+    while(p.ppe <= finalPpe)
+    {
+        p.pe = p.ppe*p.popSize;
+        while(p.ppm <= finalPpm)
+        {
+            p.pm = p.ppm*p.popSize;
+            std::cerr << std::setw(5) << p.popSize << " "
+                      << std::setw(5) << p.pe << " "
+                      << std::setw(5) << p.pm << " "
+                      << std::setw(8) << p.rho_e << " ";
+            s.Reset();
+            s.SetParams(p);
+            start = clock();
+            s.Evolve();
+            std::cerr << std::setw(10) << s.BestSolution() << std::setw(5) << " " << clock()-start << std::endl;
+            //std::cout << std::endl;
+            while(size_t(p.popSize*p.ppm) == size_t(p.popSize*(p.ppm+step)))
+                p.ppm += step;
+            p.ppm += step;
+        }
+        while(size_t(p.popSize*p.ppe) == size_t(p.popSize*(p.ppe+step)))
+            p.ppe += step;
+        p.ppe += step;
+
+        p.ppm = ippm;
+    }
+
+}
+
+void RhoeTuner(BRKGAParams p, std::string fileDir, std::string outFile, std::vector<std::vector<Cell>>* selection, double finalRho_e, double step)
+{
+    std::ifstream inFile2 (fileDir, std::ios_base::in|std::ios_base::binary);
+    if(!inFile2)
+        throw std::invalid_argument("file del circuito inesistente2");
+
+    std::ofstream dataOut(outFile, std::ios_base::out|std::ios_base::binary);
+
+    Circuit c(selection);
+    inFile2 >> c;
+    inFile2.close();
+
+    //double ip = p.rho_e;
+    time_t start;
+    CircuitSolver s(&c, p, 0);
+    while(p.rho_e < finalRho_e)
+    {
+        //EliteMutantTuner(p, fileDir, selection, 0.25, 0.3, 0.01);
+        dataOut << std::setw(5) << p.popSize << " "
+                  << std::setw(5) << p.pe << " "
+                  << std::setw(5) << p.pm << " "
+                  << std::setw(8) << p.rho_e << " ";
+        s.Reset();
+        s.SetParams(p);
+        start = clock();
+        s.Evolve();
+        dataOut << std::setw(10) << s.BestSolution() << std::setw(5) << " " << clock()-start << std::endl;
+        //std::cout << p.rho_e << std::endl;
+        p.rho_e += step;
+    }
+
+}
 
 
 
@@ -42,20 +154,17 @@ std::vector<std::vector<Cell>> readCellLibrary(std::string filename);
 int main()
 {
 
-
-
     // -----------------------------------------------------------------------------------------------------------------------------------
     //                                                              SETUP
     // -----------------------------------------------------------------------------------------------------------------------------------
     time_t start = clock();
     srand(1);
 
-    std::ifstream inFile2 ("../../../files/InputFiles/Circuits/rc.029.vhdl", std::ios_base::in|std::ios_base::binary);
+    std::string fileDir ("../../../files/InputFiles/Circuits/rc.029.vhdl");
+    std::ifstream inFile2 (fileDir, std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
         throw std::invalid_argument("file del circuito inesistente2");
-
     std::ofstream outFile("../../../files/output-adiacenza.txt", std::ios_base::out|std::ios_base::binary);
-
     std::vector<std::vector<Cell>> toPass = readCellLibrary(std::string("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs"));
 
     // *********************************************************************************
@@ -63,25 +172,38 @@ int main()
     // *********************************************************************************
     Circuit c(&toPass);
     inFile2 >> c;
-    //outFile << c; // only for graphing
+    inFile2.close();
 
-    c.AssignAll(0.1);
+    std::vector<std::thread> threads;
+    {
+        std::string outDir("../../../files/rhoe/pe01pm01.txt");
+        double ppe = 0.1;
+        double ppm = 0.1;
+        double rho_e = 0.5;
+        double pop = 100;
+        BRKGAParams p (pop, c.GetNumOfCells(), ppe*pop, ppm*pop, rho_e, 0);
+        threads.push_back(std::thread(RhoeTuner, p, fileDir, outDir, &toPass, 0.8, 0.03));
+    }
+    {
+        std::string outDir("../../../files/rhoe/pe02pm03.txt");
+        double ppe = 0.2;
+        double ppm = 0.3;
+        double rho_e = 0.5;
+        double pop = 100;
+        BRKGAParams p (pop, c.GetNumOfCells(), ppe*pop, ppm*pop, rho_e, 0);
+        threads.push_back(std::thread(RhoeTuner, p, fileDir, outDir, &toPass, 0.8, 0.03));
+    }
 
-    //std::cout << "Initialization done" << std::endl;
-    size_t pop = 30;
-    BRKGAParams p (pop, c.GetNumOfCells(), 0.2*pop, 0.3*pop, 0.6, 1);
-    CircuitSolver var (&c, p, 1);
-
-    size_t gens = 30;
-    var.setMaxGenerations(gens);
-    std::cout << "generations: " << gens << std::endl;
-    std::cout << p << std::endl;
-    var.Evolve();
-    //std::cout << "delay: " << var.BestSolution() << std::endl;
-    //std::cout << "area: " << var.GetAreaOccupation() << std::endl;
 
 
-    std::cout << clock()-start << std::endl;
+
+
+
+
+
+
+    for(auto& i : threads)
+        i.join();
     return 0;
 }
 
@@ -132,4 +254,3 @@ std::vector<std::vector<Cell>> readCellLibrary(std::string filename)
     //std::cout << sizeof (cells) <<std::endl;
     return toPass;
 }
-

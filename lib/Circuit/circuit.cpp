@@ -287,6 +287,35 @@ bool Circuit::readInstruction3(std::string line)
 
 
 //actually non used. Only for debug
+bool operator==(const Circuit &c1, const Circuit &c2)
+{
+    bool res1 = 1;
+    for(size_t i = 0; i < c1.inputLists.size(); i++)
+    {
+        if((*c1.inputLists[i].first) != (*c2.inputLists[i].first))
+        {
+            return 0;
+        }
+        else if (c1.inputLists[i].second.size() != c2.inputLists[i].second.size())
+        {
+            return 0;
+        }
+        else
+        {
+            for(size_t j = 0; j < c1.inputLists[i].second.size(); j++)
+            {
+                if((*c1.inputLists[i].second[j]) != (*c2.inputLists[i].second[j]))
+                {
+                    return 0;
+                }
+            }
+        }
+    }
+    bool res3 = (c1.cellSelection == c2.cellSelection);
+
+    return res1 && res3;
+}
+
 void Circuit::AssignRandom()
 {
 
@@ -305,7 +334,7 @@ void Circuit::AssignRandom()
     return;
 }
 
-void Circuit::AssignAll(double p)
+void Circuit::AssignAll(double p) const
 {
     for(size_t i = 0; i < inputLists.size(); i++)
         ChangeCell(i, p);
