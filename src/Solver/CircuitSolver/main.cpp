@@ -49,7 +49,7 @@ void PopulationTuner(BRKGAParams p, std::vector<std::vector<Cell>>* selection, s
     inFile2.close();
 
     size_t ip = p.popSize;
-    CircuitSolver s(&c, p, 0);
+    CircuitSolver s(c, p, 0);
     time_t start;
     for(size_t pop = ip; pop < maxPopSize; pop += step)
     {
@@ -65,7 +65,7 @@ void PopulationTuner(BRKGAParams p, std::vector<std::vector<Cell>>* selection, s
         s.SetParams(p);
         start = clock();
         s.Evolve();
-        std::cerr << std::setw(10) << s.BestSolution() << std::setw(5) << " " << clock()-start << std::endl;
+        std::cerr << std::setw(10) << s.BestFitness() << std::setw(5) << " " << clock()-start << std::endl;
     }
 
 }
@@ -84,7 +84,7 @@ void EliteMutantTuner(BRKGAParams p, std::string fileDir, std::vector<std::vecto
     inFile2 >> c;
     inFile2.close();
     double ippm = p.ppm;
-    CircuitSolver s(&c, p, 0);
+    CircuitSolver s(c, p, 0);
     time_t start;
     while(p.ppe <= finalPpe)
     {
@@ -100,7 +100,7 @@ void EliteMutantTuner(BRKGAParams p, std::string fileDir, std::vector<std::vecto
             s.SetParams(p);
             start = clock();
             s.Evolve();
-            std::cerr << std::setw(10) << s.BestSolution() << std::setw(5) << " " << clock()-start << std::endl;
+            std::cerr << std::setw(10) << s.BestFitness() << std::setw(5) << " " << clock()-start << std::endl;
             //std::cout << std::endl;
             while(size_t(p.popSize*p.ppm) == size_t(p.popSize*(p.ppm+step)))
                 p.ppm += step;
@@ -129,19 +129,19 @@ void RhoeTuner(BRKGAParams p, std::string fileDir, std::string outFile, std::vec
 
     //double ip = p.rho_e;
     time_t start;
-    CircuitSolver s(&c, p, 0);
+    CircuitSolver s(c, p, 0);
     while(p.rho_e < finalRho_e)
     {
         //EliteMutantTuner(p, fileDir, selection, 0.25, 0.3, 0.01);
-        dataOut << std::setw(5) << p.popSize << " "
-                  << std::setw(5) << p.pe << " "
-                  << std::setw(5) << p.pm << " "
-                  << std::setw(8) << p.rho_e << " ";
+        //dataOut << std::setw(5) << p.popSize << " "
+//                  << std::setw(5) << p.pe << " "
+//                  << std::setw(5) << p.pm << " "
+//                  << std::setw(8) << p.rho_e << " ";
         s.Reset();
         s.SetParams(p);
         start = clock();
         s.Evolve();
-        dataOut << std::setw(10) << s.BestSolution() << std::setw(5) << " " << clock()-start << std::endl;
+        //dataOut << std::setw(10) << s.BestFitness() << std::setw(5) << " " << clock()-start << std::endl;
         //std::cout << p.rho_e << std::endl;
         p.rho_e += step;
     }
@@ -150,17 +150,14 @@ void RhoeTuner(BRKGAParams p, std::string fileDir, std::string outFile, std::vec
 
 
 
-
 int main()
 {
+
 
     // -----------------------------------------------------------------------------------------------------------------------------------
     //                                                              SETUP
     // -----------------------------------------------------------------------------------------------------------------------------------
-    time_t start = clock();
-    srand(1);
-
-    std::string fileDir ("../../../files/InputFiles/Circuits/rc.029.vhdl");
+    std::string fileDir ("../../../files/InputFiles/Circuits/rc.001.vhdl");
     std::ifstream inFile2 (fileDir, std::ios_base::in|std::ios_base::binary);
     if(!inFile2)
         throw std::invalid_argument("file del circuito inesistente2");
@@ -174,6 +171,17 @@ int main()
     inFile2 >> c;
     inFile2.close();
 
+//    std::string outDir("../../../files/rhoe/pe01pm01.txt");
+//    double ppe = 0.1;
+//    double ppm = 0.1;
+//    double rho_e = 0.5;
+//    double pop = 40;
+//    BRKGAParams p (pop, c.GetNumOfCells(), ppe*pop, ppm*pop, rho_e);
+//    CircuitSolver s(c, p, 0);
+//    s.Evolve();
+//    std::cout << s.BestFitness() << std::endl;
+
+
     std::vector<std::thread> threads;
     {
         std::string outDir("../../../files/rhoe/pe01pm01.txt");
@@ -181,29 +189,24 @@ int main()
         double ppm = 0.1;
         double rho_e = 0.5;
         double pop = 100;
-        BRKGAParams p (pop, c.GetNumOfCells(), ppe*pop, ppm*pop, rho_e, 0);
+        BRKGAParams p (pop, c.GetNumOfCells(), ppe*pop, ppm*pop, rho_e);
         threads.push_back(std::thread(RhoeTuner, p, fileDir, outDir, &toPass, 0.8, 0.03));
     }
-    {
+ /*   {
         std::string outDir("../../../files/rhoe/pe02pm03.txt");
         double ppe = 0.2;
         double ppm = 0.3;
         double rho_e = 0.5;
         double pop = 100;
-        BRKGAParams p (pop, c.GetNumOfCells(), ppe*pop, ppm*pop, rho_e, 0);
+        BRKGAParams p (pop, c.GetNumOfCells(), ppe*pop, ppm*pop, rho_e);
         threads.push_back(std::thread(RhoeTuner, p, fileDir, outDir, &toPass, 0.8, 0.03));
     }
-
-
-
-
-
-
-
-
+*/
 
     for(auto& i : threads)
         i.join();
+
+
     return 0;
 }
 

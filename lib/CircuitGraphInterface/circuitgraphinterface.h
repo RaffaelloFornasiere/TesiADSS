@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <iostream>
 #include "../Circuit/circuit.h"
+#include "../DataOut/dataout.h"
 #include "../BRKGA/BRKGA.h"
 #include <thread>
 
@@ -117,14 +118,14 @@ private:
 // ************************************************************************************
 
 
-class CircuitSolver : public Graph<double>, public BRKGA<std::string, double>
+class CircuitSolver : public Graph<double>, public BRKGA<Circuit, CircuitOut, double>
 {
     friend std::ostream& operator<<(std::ostream& os, const CircuitSolver& cg);
     friend class CircuitNode;
 
 
 public:
-    CircuitSolver(const Circuit* c, BRKGAParams params, bool init = 0);
+    CircuitSolver(const Circuit &c, BRKGAParams params, bool init = 0);
     ~CircuitSolver();
 
 
@@ -132,14 +133,14 @@ public:
     // circuit
     void Setup(); // for each cell, updates the output capacitance
     std::pair<const Cell*, int> GetCell(CircuitNode *n) const;
-    void ChangeCell(const Cell* cell) const {circuit->ChangeCell(cell);}
+    void ChangeCell(const Cell* cell) const {input.ChangeCell(cell);}
 
 
     // *********** Solver methods **************
     void Decode() override;
     bool StopCriteria() override;
     double Percentile() override;
-    double BestSolution() const override;
+    double BestFitness() const override;
     //double BestSolution() const override {return fit_1(fitVect.front().first);}
     // *****************************************
 
@@ -147,7 +148,7 @@ public:
     size_t getMaxGenerations() const {return maxGenerations;}
     void setMaxGenerations(const size_t &value){maxGenerations = value;}
 
-    double GetAreaOccupation() {return circuit->GetAreaOccupation();}
+    double GetAreaOccupation() {return input.GetAreaOccupation();}
 
 private:
 
@@ -159,7 +160,7 @@ private:
     //Cell {input_1, input_2 ... input_n, output_1 ... output_n}
     std::unordered_map<CircuitNode*, std::pair<const Cell*, int>>  map1;
     std::unordered_map<const Cell*, std::vector<CircuitNode*>> map2;
-    const Circuit* circuit;
+    //const Circuit* input;
 
 
 

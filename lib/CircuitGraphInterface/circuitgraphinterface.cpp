@@ -121,19 +121,17 @@ std::ostream& operator<<(std::ostream &os, const CircuitSolver &cg)
     return os;
 }
 
-CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
-    : BRKGA(params), circuit(c)
+CircuitSolver::CircuitSolver(const Circuit& c, BRKGAParams params, bool init)
+    : BRKGA(c, params)
 {
     // for each cell in the circuit, it will create some circuit nodes
     map1.clear();
     map2.clear();
 
-
-
     int in = 0, out = 0;
-    for(size_t i = 0; i < c->GetNumOfCells(); i++)
+    for(size_t i = 0; i < input.GetNumOfCells(); i++)
     {
-        const Cell* aux = c->GetCell(i);
+        const Cell* aux = input.GetCell(i);
 
         std::vector<CircuitNode*> vect;
         size_t inputs = aux->GetNumOfInputs();
@@ -145,7 +143,7 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
         for(size_t j = 0; j < inputs; j++)
         {
             if(!init)
-                circuit->ChangeCell(i, 0);
+                input.ChangeCell(i, 0);
             double cap = aux->GetInPinCapacity(j);
             vect.emplace_back(new InputCircuitNode(this, cap, "in" + std::to_string(in)));
             //std::cout << vect.back()->getName() << std::endl;
@@ -157,7 +155,7 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
         for(size_t j = 0; j < outputs; j++)
         {
             if(!init)
-                circuit->ChangeCell(i, 0);
+                input.ChangeCell(i, 0);
             double cap = aux->GetInPinCapacity(j);
             vect.emplace_back(new OutputCircuitNode(this, cap, "out"+std::to_string(out)));
             //std::cout << vect.back()->getName() << std::endl;
@@ -177,54 +175,16 @@ CircuitSolver::CircuitSolver(const Circuit *c, BRKGAParams params, bool init)
         }
     }
 
-   // std::cout << "\tnodes created" << std::endl;
-//    for(auto& i : map1)
-//    {
-//        //std::cout << *i.first << std::endl;
-//    }
-//    std::vector<CircuitNode*> nodes;
-//    for(auto& i : map1)
-//    {
-//        nodes.push_back(i.first);
-//    }
-//    std::cout << "edgesmmmmmmmmmmmmmmm\n";
     CreateEdges();
-    //std::cout << "\tedges created" << std::endl;
-
-//    std::sort(nodes.begin(), nodes.end(),
-//              [&](auto& n1, auto& n2)
-//    {
-//        if(n1->getName() != n2->getName())
-//            return  n1->getName() < n2->getName();
-//        else
-//        {
-//            return n1->adj.front()->getName() < n2->adj.front()->getName();
-//        }
-//    });
 
     for(auto& i : map1)
     {
-        //std::cout << *i << std::endl ;
         adjList.push_back(i.first);
     }
-   // std::cout << "\tassignment done" << std::endl;
-
-//    for(auto& i : adjList)
-//    {
-//       //std::cout << *i << std::endl ;
-//    }
-
-
-    //std::cout << map1.size() << std::endl;
 
     TopologicalSort();
-//    for(auto& i : adjList)
-//    {
-//     //   std::cout << *i << std::endl ;
-//    }
-    Setup();
 
-  //  std::cout << "\tend constructor " << std::endl;
+    Setup();
 
     return;
 }
@@ -266,10 +226,10 @@ std::pair<const Cell *, int> CircuitSolver::GetCell(CircuitNode *n) const
 
 void CircuitSolver::CreateEdges()
 {
-    for(size_t i = 0; i < circuit->GetNumOfCells(); i++)
+    for(size_t i = 0; i < input.GetNumOfCells(); i++)
     {
-        const Cell* aux = circuit->GetCell(i);
-        std::vector<const Cell*> outputs = circuit->GetOutputsOfCell(i);
+        const Cell* aux = input.GetCell(i);
+        std::vector<const Cell*> outputs = input.GetOutputsOfCell(i);
 
         for(auto& o : outputs)
         {
@@ -334,9 +294,9 @@ void CircuitSolver::Decode()
         //        for(auto& i : alleles)
         //            std::cout << i << " ";
 
-        for(size_t i = 0; i < circuit->GetNumOfCells(); i++)
+        for(size_t i = 0; i < input.GetNumOfCells(); i++)
         {
-            circuit->ChangeCell(i, alleles[i]);
+            input.ChangeCell(i, alleles[i]);
         }
         Setup();
         item.first = fit(getWorstPathDistance());
@@ -358,7 +318,7 @@ bool CircuitSolver::StopCriteria()
     {
         counter++;
     }
-    if(counter > 20)
+    if(counter > 5)
         return true;
     return  false;
     //return generations >= maxGenerations;
@@ -369,7 +329,7 @@ double CircuitSolver::Percentile()
     return std::floor(static_cast<double>(generations)/maxGenerations*100);
 }
 
-double CircuitSolver::BestSolution() const
+double CircuitSolver::BestFitness() const
 {
     return fit_1(fitVect.front().first);
 }

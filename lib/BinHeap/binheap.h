@@ -142,6 +142,7 @@ bool BinHeap<T,K>::CheckCollisions()
         if(count > 0)
         std::cout << "bucket:size " << count << std::endl;
     }
+    return 0;
 }
 
 template<class T, class K>

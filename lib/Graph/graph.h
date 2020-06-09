@@ -127,65 +127,7 @@ void Graph<M>::TopologicalSort()
         }
     }
 
-    //std::cout << "\t\theap created, size: " << heap->vect.size() << std::endl;
 
-    //std::cout << i << " " << j << " "<< k << " " <<std::endl;
- /*   i = j = k = 0;
-
-    std::vector<int> keys1;
-    while(!heap->Empty())
-    {
-        keys1.push_back(heap->Front().second);
-        heap->Pop();
-    }
-
-    for(GraphNode<M>* x : adjList)
-    {
-        if(!heap->Contains(x->heapPtr))
-        {
-            x->heapPtr = heap->Push(x, 0);
-            i++;
-        }
-
-        std::cout << x->adj.size()
-                  << " " << *x
-                  << std::endl;
-
-        for(GraphNode<M>* y : x->adj)
-        {
-            std::cout << "\t" << y->name;
-            if(heap->Contains(y->heapPtr))
-            {
-                std::cout << "c" << std::endl;
-                heap->IncreaseKey(y->heapPtr, 1);
-                j++;
-            }
-            else
-            {
-                std::cout << "nc" << std::endl;
-                y->heapPtr = heap->Push(y, 1);
-                k++;
-            }
-        }
-    }
-    std::cout << i << " " << j << " "<< k << " " << std::endl;
-
-
-*/
-//    for(GraphNode<M>* x : adjList)
-//    {
-//        if(!heap->Contains(x->heapPtr))
-//            x->heapPtr = heap->Push(x, 0);
-
-//        for(GraphNode<M>* y : x->adj)
-//        {
-//            if(heap->Contains(y->heapPtr))
-//                heap->IncreaseKey(y->heapPtr, 1);
-//            else
-//                y->heapPtr = heap->Push(y, 1);
-//        }
-//    }
- //   std::vector<int> keys2;
     while(!heap->Empty())
     {
         //std::cout << heap->Front().first->name << " "<< heap->Front().second << std::endl;
