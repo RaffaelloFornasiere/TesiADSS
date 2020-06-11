@@ -6,10 +6,10 @@
 
 std::ostream& operator<<(std::ostream &os, const Circuit &c)
 {
-    for(auto x : c.adjList)
+    for(auto& x : c.adjList)
     {
         os << "\"" << x.first.getName() << "(" << x.first.getType() << ")" << "\"";
-        for(auto y : x.second)
+        for(auto& y : x.second)
         {
             if(y->getType() != "")
                 os// <<"\"" << x.first.name << "(" << x.first.type << ")" << "\""
@@ -48,18 +48,18 @@ std::istream& operator>>(std::istream &is, Circuit &c)
 
 
 //search inside the adjacency list a cell that have "name" as output pin
-std::list<std::pair<Cell, std::vector<Cell*>>>::iterator Circuit::searchOutputSingal(std::string name)
+std::list<std::pair<Cell, std::vector<Cell*>>>::iterator Circuit::searchOutputSingal(const std::string& name)
 {
     return std::find_if(adjList.begin(),
                         adjList.end(),
-                        [=](std::pair<Cell, std::vector<Cell*>> p)
+                        [=](const std::pair<Cell, std::vector<Cell*>>& p)
     {
         return std::find(p.first.output.begin(), p.first.output.end(), name) != p.first.output.end();
     });
 }
 
 // returns the iterator of the type searched
-std::vector<std::vector<Cell>>::const_iterator Circuit::searchCellType(std::string type)
+std::vector<std::vector<Cell>>::const_iterator Circuit::searchCellType(const std::string& type)
 {
     for(size_t i = 0; i < cellSelection->size(); i++)
     {
@@ -149,8 +149,6 @@ bool Circuit::readInstruction2(std::string line)
     adjList.emplace_back(std::make_pair(Cell(name), std::vector<Cell*>()));
     inputLists.emplace_back(std::make_pair(&adjList.back().first, std::vector<Cell*>()));
 
-    if(name == "port251")
-        std::cout << "aa";
 
     auto f = line.find(":");
     auto e = line.find("port");
@@ -344,8 +342,9 @@ void Circuit::AssignAll(double p) const
 std::vector<const Cell *> Circuit::GetInputsOfCell(int cell) const
 {
     std::vector<const Cell*> aux;
-    for(auto i : inputLists[cell].second)
-        aux.push_back(i);
+    aux.reserve(inputLists[cell].second.size());
+    for(auto& i : inputLists[cell].second)
+        aux.emplace_back(i);
     return aux;
 }
 
@@ -353,13 +352,14 @@ std::vector<const Cell *> Circuit::GetInputsOfCell(int cell) const
 std::vector<const Cell *> Circuit::GetInputsOfCell(const Cell *cell) const
 {
     auto it = std::find_if(inputLists.begin(), inputLists.end(),
-                           [=](std::pair<Cell*, std::vector<Cell*>> c)
+                           [=](auto& c)
     {return c.first == cell;});
 
     if(it == inputLists.end())
         throw std::invalid_argument("no matching cell in circuit");
 
     std::vector<const Cell*> res;
+    res.reserve((*it).second.size());
     for(auto& i : (*it).second)
         res.push_back(i);
     return res;
@@ -375,6 +375,7 @@ std::vector<const Cell *> Circuit::GetOutputsOfCell(int cell) const
     for(int i = 0; i < cell; i++)
         it++;
     std::vector<const Cell*> res;
+    res.reserve((*it).second.size());
     for(auto& i : (*it).second)
         res.push_back(i);
     return res;
@@ -383,11 +384,15 @@ std::vector<const Cell *> Circuit::GetOutputsOfCell(int cell) const
 //same as above but implemented wiht pointer search
 std::vector<const Cell *> Circuit::GetOutputsOfCell(const Cell *cell) const
 {
-    auto it = std::find_if(adjList.begin(), adjList.end(), [=](std::pair<Cell, std::vector<Cell*>> c){return &c.first == cell;});
+    auto it = std::find_if(adjList.begin(), adjList.end(),
+                           [=](auto& c)
+    {return &c.first == cell;});
+
     if(it == adjList.end())
         throw std::invalid_argument("no matchin cell in circuit");
 
     std::vector<const Cell*> res;
+    res.reserve((*it).second.size());
     for(auto& i : (*it).second)
         res.push_back(i);
     return res;
@@ -443,7 +448,7 @@ bool Circuit::ChangeCell(const Cell *c, double p) const
 
     if(it2->size() != 0)
     {
-        size_t cell = p*(it2->size()-1);
+        size_t cell = static_cast<size_t>(p*(it2->size()-1));
 
         if((*it) != (*it2)[cell])
         {
@@ -495,8 +500,7 @@ bool Circuit::ChangeCell(size_t i, double p) const
 
     if(it2->size() != 0)
     {
-        size_t cell = p*(it2->size()-1);
-
+        size_t cell = static_cast<size_t>(p*(it2->size()-1));
         if((*it) != (*it2)[cell])
         {
             (*it).CopyParams(&(*it2)[cell]);

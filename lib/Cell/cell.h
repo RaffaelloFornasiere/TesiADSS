@@ -21,11 +21,11 @@ class Pin
     friend std::istream& operator>>(std::istream& is, Pin& p);
     friend std::ostream& operator<<(std::ostream& is, Pin& p);
 
-    friend bool operator==(const Pin& p, const std::string s){return p.name == s;}
-    friend bool operator==(const std::string s, const Pin& p){return p.name == s;}
+    friend bool operator==(const Pin& p, const std::string& s){return p.name == s;}
+    friend bool operator==(const std::string& s, const Pin& p){return p.name == s;}
 
 public:
-    Pin(std::string name = "") : name(name) {capacity = 0;}
+    Pin(const std::string& name = "") : name(name) {capacity = 0;}
     std::string name;
     bool dir;
     double capacity;
@@ -55,7 +55,7 @@ class CellTimingInfo
     friend std::ostream& operator<<(std::ostream& os, CellTimingInfo& c);
 
 public:
-    CellTimingInfo(std::string infoType = "") : infoType(infoType) {}
+    CellTimingInfo(const std::string& infoType = "") : infoType(infoType) {}
 
 
     double GetDelay (double inputTransition, double outCapacitance) const;
@@ -105,7 +105,7 @@ class Cell
     friend bool operator!=(const Cell& c1, const Cell& c2){return c1.name != c2.name;}
 
 public:
-    Cell(std::string cellName = "") : name(cellName){}
+    Cell(const std::string& cellName = "") : name(cellName){}
 
     // *********************SETTERS AND GETTERS**********************************
     std::string getName() const {return name;}

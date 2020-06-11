@@ -31,7 +31,7 @@ class GraphNode
 public:
     GraphNode(std::string name = ""):name(name){/*std::cout << "GraphNode constructor" << std::endl;*/}
     virtual ~GraphNode(){/*std::cout << "GraphNode destructor" << std::endl;*/}
-    virtual M Distance(GraphNode* a) {return adj.size();}
+    virtual M Distance(GraphNode* a) = 0;//{return adj.size();}
     std::string getName() const {return name;}
     virtual void AddNeighbor(GraphNode* a){adj.push_back(a);}
     std::string name;
@@ -95,19 +95,14 @@ void Graph<M>::TopologicalSort()
 {
     //std::cout << "\t\t adjsize: "<<adjList.size() <<std::endl;
 
-    int i = 0,j = 0,k =0, t = 0;
     BinHeap<GraphNode<M>*, M> *heap = new BinHeap<GraphNode<M>*, M>(adjList.size(), BinHeap<GraphNode<M>*, M>::minHeap);
     for(GraphNode<M>* x : adjList)
     {     
         if(!heap->Contains(x->heapPtr))
         {
             x->heapPtr = heap->Push(x, 0);
-            i++;
         }
-        else
-        {
-            t = 0;
-        }
+
 
         for(GraphNode<M>* y : x->adj)
         {
@@ -116,13 +111,11 @@ void Graph<M>::TopologicalSort()
             {
                // std::cout << "c" << std::endl;
                 heap->IncreaseKey(y->heapPtr, 1);
-               j++;
             }
             else
             {
               //  std::cout << "nc" << std::endl;
                 y->heapPtr = heap->Push(y, 1);
-                 k++;
             }
         }
     }

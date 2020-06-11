@@ -18,6 +18,13 @@
 #trash files
 Bin/
 
+rhoe/
+pepm/
+pop/
+
+*.stackdump
+
+
 #output file for graphviewer
 output-adiacenza.txt
 
@@ -35,9 +42,6 @@ output-adiacenza.txt
 
 # User project settings
 *.creator.user*
-
-# Qt Creator settings
-*.pro
 
 # User project settings
 *.pro.user*

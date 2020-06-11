@@ -50,7 +50,6 @@ public:
         is >> *this;
     }
 
-    double GetWorstCase();
     void AssignRandom();
     void AssignAll(double p) const;
 
@@ -83,8 +82,8 @@ private:
     bool readInstruction2(std::string line);
     bool readInstruction3(std::string line);
 
-    std::list<std::pair<Cell, std::vector<Cell*>>>::iterator searchOutputSingal(std::string name);
-    std::vector<std::vector<Cell>>::const_iterator searchCellType(std::string name);
+    std::list<std::pair<Cell, std::vector<Cell*>>>::iterator searchOutputSingal(const std::string &name);
+    std::vector<std::vector<Cell>>::const_iterator searchCellType(const std::string &name);
 
 };
 

@@ -231,8 +231,8 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) c
     //finds the range of capacitange according to the input transition
     struct Comp
     {
-        bool operator() ( const std::vector<double> v, double val ) const { return v[CellTimingInfo::inTransitIndex] < val; }
-        bool operator() (double val,  const std::vector<double> v) const { return v[CellTimingInfo::inTransitIndex] > val; }
+        bool operator() ( const std::vector<double>& v, double val ) const { return v[CellTimingInfo::inTransitIndex] < val; }
+        bool operator() (double val,  const std::vector<double>& v) const { return v[CellTimingInfo::inTransitIndex] > val; }
     };
     inputTransition = ApproxTransition(inputTransition);
     auto p = std::equal_range(values.begin(), values.end(), inputTransition, Comp{});

@@ -52,7 +52,7 @@ template <class T, class K>
 class BinHeap
 {
 public:
-    BinHeap(int reserve = 10, const std::function<bool(K, K)>& compare = [](K k1, K k2){return k1 > k2;});
+    BinHeap(int reserve = 12, const std::function<bool(K, K)>& compare = [](K k1, K k2){return k1 > k2;});
 
     std::pair<T,K> Pop();
     bool DecreaseKey(BinHeapNode<T,K>* n, K newKey);
