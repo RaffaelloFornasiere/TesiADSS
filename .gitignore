@@ -21,6 +21,7 @@ Bin/
 rhoe/
 pepm/
 pop/
+release/
 
 *.stackdump
 
