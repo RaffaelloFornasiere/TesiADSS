@@ -135,6 +135,16 @@ double Cell::GetTimingInfo(double intransit, double outCap, size_t output, size_
     return 0;
 }
 
+void Cell::setId(const std::string &value)
+{
+    id = value;
+}
+
+std::string Cell::getId() const
+{
+    return id;
+}
+
 
 
 
@@ -195,7 +205,7 @@ std::istream& operator>>(std::istream &is, CellTimingInfo& c)
             }
             g = is.tellg();
         }
-    } catch (std::invalid_argument e) {
+    } catch (std::invalid_argument& e) {
         //std::cerr << "errore in: " << e.what() << std::endl;
         //catches when there's no more a tuple of doubles. the error is thrown by std::stod
         c.values.pop_back();
@@ -224,8 +234,64 @@ std::ostream& operator<<(std::ostream &os, CellTimingInfo &c)
 }
 
 
+
+
 double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) const
 {
+    inputTransition = ApproxTransition(inputTransition);
+
+    int upper = -1;
+    int lower = -1;
+
+    if((*(values.end()-1))[CellTimingInfo::inTransitIndex] <= inputTransition
+            && (*(values.end()-1))[CellTimingInfo::outCapIndex] < outCapacitance)
+    {
+        lower = values.size()-1;
+    }
+    else
+    {
+        size_t i = 0;
+        while(i < values.size())
+        {
+            if(inputTransition > values[i][CellTimingInfo::inTransitIndex])
+                i++;
+            else if (outCapacitance > values[i][CellTimingInfo::outCapIndex]
+                     && inputTransition == values[i][CellTimingInfo::inTransitIndex])
+                i++;
+            else
+                break;
+
+        }
+        upper = i;
+        if(i != 0)
+            lower = i-1;
+    }
+
+    double prevCap = 0, succCap = 0;
+    double prevT = 0, succT = 0;
+
+    if(lower != -1)
+    {
+        prevT = values[lower][CellTimingInfo::timeIndex];
+        prevCap = values[lower][CellTimingInfo::outCapIndex];
+    }
+
+    if(upper != -1)
+    {
+        succT = values[upper][CellTimingInfo::timeIndex];
+        succCap = values[upper][CellTimingInfo::outCapIndex];
+    }
+
+    double res =(outCapacitance - succCap)/(prevCap-succCap)*prevT -
+            (outCapacitance - prevCap)/(prevCap-succCap)*succT;
+    return res;
+}
+
+
+
+double CellTimingInfo::GetDelay2(double inputTransition, double outCapacitance) const
+{
+    //return GetDelay2(inputTransition, outCapacitance);
     //std::cout << "in_tr: " << std::setw(10) << inputTransition << " out_c: " << std::setw(10) << outCapacitance << " - ";
 
     //finds the range of capacitange according to the input transition
@@ -291,7 +357,6 @@ double CellTimingInfo::GetDelay(double inputTransition, double outCapacitance) c
     // calculate the final result
     double res =(outCapacitance - succCap)/(prevCap-succCap)*prevT -
             (outCapacitance - prevCap)/(prevCap-succCap)*succT;
-    // std::cout << " res: " << res << std::endl << std::endl;
     return res;
 }
 

@@ -6,6 +6,7 @@ double OutputCircuitNode::GetWorstDelay()
 {
     if(delayUpdated == false)
     {
+
         auto p = it->GetCell(this);
 
         size_t outputIndex = p.second - p.first->GetNumOfInputs();
@@ -15,13 +16,16 @@ double OutputCircuitNode::GetWorstDelay()
         delay = std::max(cellFall, cellRise);
         delayUpdated = true;
     }
+
     return delay;
 }
 
 double OutputCircuitNode::GetWorstTransition()
 {
+    //std::cout << "get w transit: " ;
     if(transitionUpdated == false)
     {
+       // std::cout << "updating" << std::endl;
         auto p = it->GetCell(this);
         size_t outputIndex = p.second - p.first->GetNumOfInputs();
 
@@ -30,6 +34,7 @@ double OutputCircuitNode::GetWorstTransition()
         worstOutRTransit = std::max(fallTransit, riseTransit);
         transitionUpdated = true;
     }
+
 
     return worstOutRTransit;
 }
@@ -58,10 +63,9 @@ void OutputCircuitNode::CalcOutputCap()
 
 double CircuitNode::Distance(GraphNode *a)
 {
-
     double worstTransition = GetWorstTransition();
 
-    CircuitNode* aux = static_cast<CircuitNode*>(a);
+    CircuitNode* aux = dynamic_cast<CircuitNode*>(a);
     aux->SetInTransition(worstTransition);
 
     return GetWorstDelay();
@@ -110,10 +114,11 @@ std::ostream& operator<<(std::ostream &os, const CircuitGraph &cg)
     return os;
 }
 
-CircuitGraph::CircuitGraph(const Circuit& c, bool init): circuit(c)
+CircuitGraph::CircuitGraph(const Circuit& c): circuit(c)
 {
     // for each cell in the circuit, it will create some circuit nodes
     int in = 0, out = 0;
+
     for(size_t i = 0; i < circuit.GetNumOfCells(); i++)
     {
         const Cell* aux = circuit.GetCell(i);
@@ -127,8 +132,8 @@ CircuitGraph::CircuitGraph(const Circuit& c, bool init): circuit(c)
         //create the input circuitnodes
         for(size_t j = 0; j < inputs; j++)
         {
-            if(!init)
-                circuit.ChangeCell(i, 0);
+
+            circuit.ChangeCell(i, 0);
             double cap = aux->GetInPinCapacity(j);
             vect.emplace_back(new InputCircuitNode(this, cap, "in" + std::to_string(in)));
             //std::cout << vect.back()->getName() << std::endl;
@@ -139,7 +144,6 @@ CircuitGraph::CircuitGraph(const Circuit& c, bool init): circuit(c)
         //create the output circuitnodes
         for(size_t j = 0; j < outputs; j++)
         {
-            if(!init)
                 circuit.ChangeCell(i, 0);
             double cap = aux->GetInPinCapacity(j);
             vect.emplace_back(new OutputCircuitNode(this, cap, "out"+std::to_string(out)));
@@ -168,8 +172,8 @@ CircuitGraph::CircuitGraph(const Circuit& c, bool init): circuit(c)
     }
 
     TopologicalSort();
-
     SetupCaps();
+
 
     return;
 }

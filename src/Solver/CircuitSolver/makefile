@@ -30,5 +30,8 @@ cell.o: $(CELL_PATH)/cell.h $(CELL_PATH)/cell.cpp
 	g++ -c $(FLAGS) $(CELL_PATH)/cell.cpp
 
 clean:
+	rm -f *.o $(CELL_PATH)/*.gch $(CIRCUIT_PATH)/*.gch $(CGI_PATH)/*.gch $(CGI_PATH)/*.gch
+	
+cleanAll:
 	rm -f *.o *.exe $(CELL_PATH)/*.gch $(CIRCUIT_PATH)/*.gch $(CGI_PATH)/*.gch $(CGI_PATH)/*.gch
 	

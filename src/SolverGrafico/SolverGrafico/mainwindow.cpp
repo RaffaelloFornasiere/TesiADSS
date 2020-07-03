@@ -1,18 +1,25 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    QDir d;
+    if(d.exists("../../../files/InputFiles/Circuits/adder64.vhdl"))
+        ui->lineEdit_CircuitPath->setText("../../../files/InputFiles/Circuits/adder64.vhdl");
+    else
+        ui->lineEdit_CircuitPath->setText("");
+    if(d.exists("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs"))
+        ui->lineEdit_CellLibPath->setText("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs");
+    else
+        ui->lineEdit_CellLibPath->setText("");
 }
 
 MainWindow::~MainWindow()
 {
-    for(auto& i : solvers)
-        i.join();
     delete ui;
 }
 
@@ -47,89 +54,47 @@ void MainWindow::on_pushButton_OpenCellLib_clicked()
     ui->lineEdit_CellLibPath->setText(fileName);
 }
 
-void MainWindow::on_spinBox_PopSize_valueChanged(int arg1)
-{
-    popSize = arg1;
-}
-
-void MainWindow::on_spinBox_Pe_valueChanged(int arg1)
-{
-    pe = arg1;
-}
-
-
-void MainWindow::on_spinBox_Pm_valueChanged(int arg1)
-{
-    pm = arg1;
-}
-
-
-void MainWindow::on_doubleSpinBox_Rho_e_valueChanged(double arg1)
-{
-    rho_e = arg1;
-}
-
-void MainWindow::on_spinBox_MaxGens_valueChanged(int arg1)
-{
-    maxGens = arg1;
-}
-
-void MainWindow::on_doubleSpinBox_MinDelay_valueChanged(double arg1)
-{
-    minDelay = arg1;
-}
-
-void MainWindow::on_spinBox_Deadlock_valueChanged(int arg1)
-{
-    deadlock = arg1;
-}
-
-void MainWindow::on_checkBox_MaxGens_stateChanged(int arg1)
-{
-    criteria &= ~(unsigned(1));
-    criteria |= bool(arg1);
-}
-
-void MainWindow::on_checkBox_MinDelay_stateChanged(int arg1)
-{
-    criteria &= ~(unsigned(2));
-    criteria |= bool(arg1)*2;
-}
-
-void MainWindow::on_checkBox_Deadlock_stateChanged(int arg1)
-{
-    criteria &= ~(unsigned(4));
-    criteria |= bool(arg1)*4;
-}
-
-void MainWindow::on_radioButton_AndCriteria_clicked(bool checked)
-{
-    criteriaAndOr = !checked;
-}
-
-void MainWindow::on_radioButton_OrCriteria_clicked(bool checked)
-{
-    criteriaAndOr = checked;
-}
 
 void MainWindow::on_pushButton_CreateSolver_clicked()
 {
     CreateNewSolver();
 }
 
+ProcessArgs MainWindow::GetProcessArgsFromUi()
+{
+    ProcessArgs p;
+    p.popSize   = ui->spinBox_PopSize->value();
+    p.pe        = ui->doubleSpinBox_Pe->value()*p.popSize;
+    p.pm        = ui->doubleSpinBox_Pm->value()*p.popSize;
+    p.rho_e     = ui->doubleSpinBox_Rho_e->value();
+    p.maxGens   = ui->checkBox_MaxGens->isChecked()
+            * ui->spinBox_MaxGens->value();
+    p.deadlock   = ui->checkBox_Deadlock->isChecked()
+            * ui->spinBox_Deadlock->value();
+    p.minDelay   = ui->checkBox_MinDelay->isChecked()
+            * ui->doubleSpinBox_MinDelay->value();
+
+    p.criteriaAndOr = ui->radioButton_AndCriteria->isChecked();
+
+    p.circuitFilePath = ui->lineEdit_CircuitPath->text().toStdString();
+    p.celllibFilePath = ui->lineEdit_CellLibPath->text().toStdString();
+
+
+    p.bias = ui->doubleSpinBox_Bias->value();
+
+    return p;
+}
+
 void MainWindow::CreateNewSolver()
 {
-    SolverDialog d;
+    ProcessArgs p = GetProcessArgsFromUi();
+    if(p.celllibFilePath == "" || p.circuitFilePath == "")
+    {
+        QMessageBox box;
+        box.setText("selezionare libreria e circuito");
+        return;
+    }
+    SolverDialog d(p);
     d.show();
     d.exec();
-    if(system(NULL))
-    {
-        qDebug() << "shell available";
-    }
-    else
-    {
-         qDebug() << "no shell available";
-    }
-
-
 }

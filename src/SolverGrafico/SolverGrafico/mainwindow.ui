@@ -27,284 +27,22 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0" colspan="4">
-     <widget class="Line" name="line">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>controllo file</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="3">
-     <spacer name="horizontalSpacer_4">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="4" column="0" colspan="3">
-     <widget class="QLabel" name="label_4">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Parametri Algoritmo Genetico</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <widget class="QPushButton" name="pushButton_OpenCircuitFile">
-      <property name="text">
-       <string>Apri File</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="value">
-       <number>0</number>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="pushButton_OpenCellLib">
-      <property name="text">
-       <string>Apri File</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <spacer name="horizontalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="5" column="0" colspan="4">
+    <item row="4" column="0" colspan="4">
      <layout class="QGridLayout" name="gridLayout_2">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
-      <item row="11" column="0" rowspan="2">
-       <widget class="QCheckBox" name="checkBox_MaxGens">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>179</width>
-          <height>26</height>
-         </size>
-        </property>
+      <item row="0" column="0" rowspan="2">
+       <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Massimo numero di generazioni</string>
+         <string>Dimensione intera popolazione</string>
         </property>
        </widget>
       </item>
-      <item row="15" column="2" rowspan="2">
-       <widget class="QLabel" name="label_14">
-        <property name="text">
-         <string>L'algoritmo viene arrestato dopo n generazioni che non aumenta il fitness</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="15" column="0" rowspan="2">
-       <widget class="QCheckBox" name="checkBox_Deadlock">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>179</width>
-          <height>26</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Condizione di deadlock</string>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="2" rowspan="2">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" rowspan="2">
-       <widget class="QLabel" name="label_11">
-        <property name="minimumSize">
-         <size>
-          <width>179</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Seleziona il riterio di arresto</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" rowspan="2">
-       <widget class="QSpinBox" name="spinBox_PopSize">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>66</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximum">
-         <number>1000</number>
-        </property>
-        <property name="value">
-         <number>40</number>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" rowspan="2">
-       <widget class="QSpinBox" name="spinBox_Pm">
-        <property name="minimumSize">
-         <size>
-          <width>66</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximum">
-         <number>1000</number>
-        </property>
-        <property name="value">
-         <number>30</number>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="1" rowspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_MinDelay"/>
-      </item>
-      <item row="2" column="2" rowspan="2">
-       <widget class="QLabel" name="label_9">
-        <property name="minimumSize">
-         <size>
-          <width>245</width>
-          <height>28</height>
-         </size>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::WheelFocus</enum>
-        </property>
-        <property name="text">
-         <string>Consigliato tra 10% e il 25% dell'intera poplazione</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="19" column="0" colspan="3">
+      <item row="21" column="0" colspan="3">
        <widget class="Line" name="line_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0" rowspan="2">
-       <widget class="QCheckBox" name="checkBox_MinDelay">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>179</width>
-          <height>27</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Ritardo da raggiungere</string>
-        </property>
-       </widget>
-      </item>
-      <item row="15" column="1" rowspan="2">
-       <widget class="QSpinBox" name="spinBox_Deadlock">
-        <property name="maximum">
-         <number>3000</number>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="2" rowspan="2">
-       <widget class="QLabel" name="label_12">
-        <property name="minimumSize">
-         <size>
-          <width>245</width>
-          <height>34</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>L'algoritmo viene arrestato quando viene raggiunto il numeor di generazioni indicate</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1" rowspan="2">
-       <widget class="QSpinBox" name="spinBox_Pe">
-        <property name="minimumSize">
-         <size>
-          <width>66</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximum">
-         <number>1000</number>
-        </property>
-        <property name="value">
-         <number>20</number>
         </property>
        </widget>
       </item>
@@ -333,24 +71,187 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0" colspan="3">
-       <widget class="Line" name="line_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+      <item row="11" column="0" rowspan="2">
+       <widget class="QLabel" name="label_11">
+        <property name="minimumSize">
+         <size>
+          <width>179</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Seleziona il riterio di arresto</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="1" rowspan="2">
-       <widget class="QSpinBox" name="spinBox_MaxGens">
+      <item row="13" column="2" rowspan="2">
+       <widget class="QLabel" name="label_12">
+        <property name="minimumSize">
+         <size>
+          <width>245</width>
+          <height>34</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>L'algoritmo viene arrestato quando viene raggiunto il numeor di generazioni indicate</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" rowspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_Pe">
+        <property name="minimumSize">
+         <size>
+          <width>66</width>
+          <height>23</height>
+         </size>
+        </property>
+        <property name="decimals">
+         <number>4</number>
+        </property>
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.200000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="15" column="2" rowspan="2">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2" rowspan="2">
+       <widget class="QLabel" name="label_9">
+        <property name="minimumSize">
+         <size>
+          <width>245</width>
+          <height>28</height>
+         </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::WheelFocus</enum>
+        </property>
+        <property name="text">
+         <string>Consigliato tra 10% e il 25% dell'intera poplazione</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="17" column="1" rowspan="2">
+       <widget class="QSpinBox" name="spinBox_Deadlock">
         <property name="maximum">
          <number>3000</number>
         </property>
+        <property name="value">
+         <number>15</number>
+        </property>
        </widget>
       </item>
-      <item row="0" column="0" rowspan="2">
-       <widget class="QLabel" name="label_5">
+      <item row="17" column="0" rowspan="2">
+       <widget class="QCheckBox" name="checkBox_Deadlock">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>179</width>
+          <height>26</height>
+         </size>
+        </property>
         <property name="text">
-         <string>Dimensione intera popolazione</string>
+         <string>Condizione di deadlock</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="15" column="0" rowspan="2">
+       <widget class="QCheckBox" name="checkBox_MinDelay">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>179</width>
+          <height>27</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Ritardo da raggiungere</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="19" column="0" rowspan="2" colspan="3">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QRadioButton" name="radioButton_AndCriteria">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>247</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Tutti i criteri devono verificarsi</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButton_OrCriteria">
+          <property name="minimumSize">
+           <size>
+            <width>247</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Solo un criterio deve verificarsi</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="6" column="0" rowspan="2">
+       <widget class="QLabel" name="label_15">
+        <property name="text">
+         <string>Percentuale crossover (rho_e)</string>
         </property>
        </widget>
       </item>
@@ -370,86 +271,101 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="3" rowspan="20">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
+      <item row="0" column="1" rowspan="2">
+       <widget class="QSpinBox" name="spinBox_PopSize">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="sizeHint" stdset="0">
+        <property name="minimumSize">
          <size>
-          <width>20</width>
-          <height>40</height>
+          <width>66</width>
+          <height>23</height>
          </size>
         </property>
-       </spacer>
-      </item>
-      <item row="17" column="0" rowspan="2" colspan="3">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QRadioButton" name="radioButton_AndCriteria">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>247</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Tutti i criteri devono verificarsi</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="radioButton_OrCriteria">
-          <property name="minimumSize">
-           <size>
-            <width>247</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Solo un criterio deve verificarsi</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="0" column="4">
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+        <property name="maximum">
+         <number>1000</number>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
+        <property name="value">
+         <number>40</number>
         </property>
-       </spacer>
+       </widget>
       </item>
       <item row="2" column="0" rowspan="2">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Numero di individui elite</string>
+         <string>Percentuale di individui elite</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0" rowspan="2">
+       <widget class="QCheckBox" name="checkBox_MaxGens">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>179</width>
+          <height>26</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Massimo numero di generazioni</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1" rowspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_Rho_e">
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.700000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0" colspan="3">
+       <widget class="Line" name="line_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="15" column="1" rowspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_MinDelay">
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="1" rowspan="2">
+       <widget class="QSpinBox" name="spinBox_MaxGens">
+        <property name="maximum">
+         <number>3000</number>
+        </property>
+        <property name="value">
+         <number>50</number>
         </property>
        </widget>
       </item>
       <item row="4" column="0" rowspan="2">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>Numero di mutanti</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" rowspan="2">
-       <widget class="QLabel" name="label_15">
-        <property name="text">
-         <string>Percentuale crossover (rho_e)</string>
+         <string>Percentuale di mutanti</string>
         </property>
        </widget>
       </item>
@@ -469,19 +385,91 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1" rowspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_Rho_e">
-        <property name="minimum">
-         <double>0.500000000000000</double>
+      <item row="4" column="1" rowspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_Pm">
+        <property name="minimumSize">
+         <size>
+          <width>66</width>
+          <height>23</height>
+         </size>
+        </property>
+        <property name="decimals">
+         <number>4</number>
         </property>
         <property name="maximum">
-         <double>0.800000000000000</double>
+         <double>1.000000000000000</double>
         </property>
         <property name="singleStep">
          <double>0.010000000000000</double>
         </property>
         <property name="value">
-         <double>0.700000000000000</double>
+         <double>0.300000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="17" column="2" rowspan="2">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>L'algoritmo viene arrestato dopo n generazioni che non aumenta il fitness</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" rowspan="22">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="8" column="1" rowspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_Bias">
+        <property name="minimum">
+         <double>-1.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="value">
+         <double>-1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="2" rowspan="2">
+       <widget class="QLabel" name="label_19">
+        <property name="minimumSize">
+         <size>
+          <width>245</width>
+          <height>28</height>
+         </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::WheelFocus</enum>
+        </property>
+        <property name="text">
+         <string>1: la popolazione viene inizializzata con le celle ad area massima
+0:La popolazione vine inizializzata con le celle ad area minima</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" rowspan="2">
+       <widget class="QLabel" name="label_17">
+        <property name="text">
+         <string>Bias</string>
         </property>
        </widget>
       </item>
@@ -499,41 +487,6 @@
        </size>
       </property>
      </spacer>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>215</width>
-        <height>22</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Seleziona il circuito</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEdit_CircuitPath">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>180</width>
-        <height>0</height>
-       </size>
-      </property>
-     </widget>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label_2">
@@ -554,6 +507,75 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QLabel" name="label_4">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Parametri Algoritmo Genetico</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="pushButton_OpenCellLib">
+      <property name="text">
+       <string>Apri File</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QPushButton" name="pushButton_CreateSolver">
+      <property name="text">
+       <string>Crea risolutore</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="4">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>215</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Seleziona il circuito</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3">
+     <spacer name="horizontalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
     <item row="1" column="1">
      <widget class="QLineEdit" name="lineEdit_CellLibPath">
       <property name="sizePolicy">
@@ -562,14 +584,49 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QPushButton" name="pushButton_CreateSolver">
       <property name="text">
-       <string>Crea risolutore</string>
+       <string>C:/Users/raffa/Documents/uni/TesiADSS/Codici/TesiADSS/files/InputFiles/Cell_Libraries/my_cell_library.hs</string>
       </property>
      </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="lineEdit_CircuitPath">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>180</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>C:/Users/raffa/Documents/uni/TesiADSS/Codici/TesiADSS/files/InputFiles/Circuits/adder64.vhdl</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QPushButton" name="pushButton_OpenCircuitFile">
+      <property name="text">
+       <string>Apri File</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
     </item>
    </layout>
   </widget>
@@ -579,7 +636,7 @@
      <x>0</x>
      <y>0</y>
      <width>989</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>

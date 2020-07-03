@@ -17,9 +17,206 @@
 #include <signal.h>
 
 
+struct Args
+{
+    Args(){}
+    Args(std::string cp, std::string clp, std::string op, BRKGAParams p,
+         size_t mg, size_t dl, double dg, bool tt, CriteriaPolicy py, bool po, double bias)
+        : circuitPath(cp), celllibPath(clp), outFilePath(op), p(p),
+          maxgens(mg), deadlock(dl), delaygoal(dg), bias (bias), timeTrack(tt), policy(py),
+          plotOutput(po)
+    {}
+    std::string circuitPath;
+    std::string celllibPath;
+    std::string outFilePath;
+    BRKGAParams p;
+    size_t maxgens;
+    size_t deadlock;
+    double delaygoal;
+    double bias;
+    bool timeTrack;
+    CriteriaPolicy policy;
+    bool plotOutput;
+};
+
+
+void ThreadSolver(Args a);
+std::vector<std::vector<Cell>> readCellLibrary(const std::string& filename);
+
+enum class paolo {bello, come, stai};
+
+
+int main(int argc, char *argv[])
+{
+    srand(time(nullptr));
+    int opt;
+
+
+    const char *shortOpts = ":c:l:f:p:e:m:r:g:t:d:aib:n";
+    const int minOpts = 14;
+
+    Args a ("../../../files/InputFiles/Circuits/adder64.vhdl",
+            "../../../files/InputFiles/Cell_Libraries/my_cell_library.hs",
+            "", BRKGAParams(20, 0, 2, 3, 0.7),
+            0, 0, 0, 1, CriteriaPolicy::OrPolicy, 0, -1);
+    if(argc > 1)
+    {
+        while((opt = getopt(argc, argv, shortOpts)) != -1)
+        {
+            switch(opt)
+            {
+
+            case 'c':
+                a.circuitPath = optarg;
+                break;
+            case 'l':
+                a.celllibPath = optarg;
+                break;
+            case 'f':
+                a.outFilePath = optarg;
+                if(a.outFilePath == ".")
+                    a.outFilePath = "";
+                break;
+            case 'p':
+                a.p.popSize = std::stoi(optarg);
+                break;
+            case 'e':
+                a.p.pe = std::stoi(optarg);
+                break;
+            case 'm':
+                a.p.pm = std::stoi(optarg);
+                break;
+            case 'r':
+                a.p.rho_e = std::stod(optarg);
+                break;
+            case 'g':
+                a.maxgens = std::stoul(optarg);
+                break;
+            case 'd':
+                a.deadlock = std::stoul(optarg);
+                break;
+            case 't':
+                a.delaygoal = std::stod(optarg);
+                break;
+            case 'a':
+                a.policy = CriteriaPolicy::AndPolicy;
+                break;
+            case 'i':
+                a.timeTrack = 0;
+                break;
+            case 'n':
+                a.plotOutput = 1;
+                break;
+            case 'b':
+                //std::cout << "-b: "<< optarg << std::endl;
+                a.bias = std::stod(optarg);
+                break;
+            case ':':
+                std::cerr << "Missing argument" << std::endl;
+                return 1;
+                break;
+            default:
+                std::cerr << "Unexpected option" << std::endl;
+                return 2;
+            }
+        }
+
+        if(optind < minOpts)
+        {
+            std::cerr << "Missing options" << std::endl;
+            return 1;
+        }
+
+        std::cout << std::endl;
+        std::cout << "circuit path: " << a.circuitPath << std::endl;
+        std::cout << "celllib path: " << a.celllibPath << std::endl;
+        std::cout << "outFile path: " << a.outFilePath << std::endl;
+        std::cout << a.p << std::endl;
+    }
+    else
+    {
+        a.maxgens = 10;
+        a.deadlock = 5;
+        //a.delaygoal = 3.52;
+        a.policy = CriteriaPolicy::AndPolicy;
+    }
+
+    // ***************************** Lettura files **********************************
+    ThreadSolver(a);
+
+
+    return 0;
+}
+
+
+
+void ThreadSolver(Args a)
+{
+    std::vector<std::vector<Cell>> cells = readCellLibrary(a.celllibPath);
+    std::cout << "cells initilized" << std::endl;
+
+    std::ifstream circuitFile(a.circuitPath, std::ios_base::in|std::ios_base::binary);
+    if(!circuitFile)
+    {
+        throw std::invalid_argument("file del circuito inesistente");
+    }
+    Circuit c(&cells);
+    circuitFile >> c;
+    circuitFile.close();
+    std::cout << "circuit initialized" << std::endl;
+
+    // ******************************************************************************
+
+    if(a.maxgens + a.delaygoal + a.deadlock == 0.0)
+        std::cout << "WARNING: Algorithm won't stop" << std::endl;
+
+
+    CircuitGraph ss(c);
+    c.AssignRandom();
+    ss.SetupCaps();
+    std::cout << "Delay: " << ss.getWorstPathDistance() << " Area: " << ss.GetAreaOccupation() << " " << ss.GetNumOfNodes() << std::endl;
+
+    c.AssignAll(0);
+    ss.SetupCaps();
+    std::cout << "Delay: " << ss.getWorstPathDistance() << " Area: " << ss.GetAreaOccupation() << " " << ss.GetNumOfNodes() << std::endl;
+
+
+    c.AssignAll(1);
+    ss.SetupCaps();
+    std::cout << "Delay: " << ss.getWorstPathDistance() << " Area: " << ss.GetAreaOccupation() << " " << ss.GetNumOfNodes() << std::endl;
+
+
+    a.p.nAlleles = c.GetNumOfCells();
+    a.p.UpdateFromPop();
+
+    CircuitSolver s(c, a.p);
+
+//    std::cout << a.maxgens << " " << a.delaygoal << " " << a.deadlock << std::endl;
+
+    s.setBias(a.bias);
+    //std::cout << "bias: " << a.bias << std::endl;
+    s.setDeadlock(a.deadlock);
+    s.setMaxGens(a.maxgens);
+    s.setDelayGoal(a.delaygoal);
+    s.setCriteriaPolicy(a.policy);
+    s.TrackEvolution(1, "", a.timeTrack);
+    if(a.outFilePath == "")
+        std::cout << "---" << std::endl;
+    s.Evolve();
+    if(a.outFilePath == "")
+        std::cout << "---" << std::endl;
+
+    if(a.plotOutput)
+    {
+        std::ofstream out("../../../files/output-adiacenza.txt", std::ios_base::out|std::ios_base::binary);
+        out << c;
+        out.close();
+    }
+}
+
+
 std::vector<std::vector<Cell>> readCellLibrary(const std::string& filename)
 {
-    //srand(time(nullptr));
     std::ifstream inFile (filename, std::ios_base::in|std::ios_base::binary);
     if(!inFile)
         throw std::invalid_argument("file librerie inesistente");
@@ -58,289 +255,16 @@ std::vector<std::vector<Cell>> readCellLibrary(const std::string& filename)
             toPass.push_back(std::vector<Cell>(1, cells.at(i)));
     }
 
+    //toPass.front().front().TestTimingInfo();
+
+    for(auto& i : toPass)
+    {
+        std::sort(i.begin(), i.end(), []
+                  (const Cell& c1, const Cell& c2)
+        {return c1.getArea() < c2.getArea();});
+    }
     return toPass;
 }
-
-
-void PopulationTuner(std::string fileDir, std::string outFile, BRKGAParams p, std::vector<std::vector<Cell>>* selection, size_t maxPopSize, size_t step)
-{
-    std::ifstream inFile2 (fileDir, std::ios_base::in|std::ios_base::binary);
-    if(!inFile2)
-        throw std::invalid_argument("file del circuito inesistente2");
-
-    std::ofstream dataOut;
-
-
-
-    Circuit c(selection);
-    inFile2 >> c;
-    inFile2.close();
-
-    size_t ip = p.popSize;
-    CircuitSolver s(c, p, 0);
-    time_t start;
-    std::string path;
-    for(size_t pop = ip; pop < maxPopSize; pop += step)
-    {
-        p.popSize = pop;
-        p.UpdateFromRate();
-        path = outFile + std::string("pop") + std::to_string(p.popSize) + std::string(".txt");
-        dataOut.open(path, std::ios_base::out|std::ios_base::binary);
-
-
-        dataOut << std::setw(5) << p.popSize << " "
-                << std::setw(5) << p.pe << " "
-                << std::setw(5) << p.pm << " "
-                << std::setw(8) << p.rho_e << std::endl;
-
-        s.Reset();
-        s.SetParams(p);
-        start = clock();
-        s.TrackEvolution(1, path);
-        s.Evolve();
-        std::cout << std::setw(10) << s.BestFitness() << std::setw(5) << " " << clock()-start << std::endl;
-        dataOut.close();
-
-    }
-    return;
-
-}
-
-
-
-void EliteMutantTuner(std::string fileDir, std::string outFile, BRKGAParams p, std::vector<std::vector<Cell>>* selection, double finalPpe, double finalPpm, double step)
-{
-    std::ifstream inFile2 (fileDir, std::ios_base::in|std::ios_base::binary);
-    if(!inFile2)
-        throw std::invalid_argument("file del circuito inesistente2");
-
-    std::ofstream dataOut;
-
-    Circuit c(selection);
-    inFile2 >> c;
-    inFile2.close();
-    double ippm = p.ppm;
-    CircuitSolver s(c, p, 0);
-    time_t start;
-    std::string path;
-    while(p.ppe <= finalPpe)
-    {
-        while(p.ppm <= finalPpm)
-        {
-            std::cout << "\tbegin pepm tuning step" << std::endl;
-            path = outFile + std::string("pepm") + std::to_string(int(p.ppe*100)) + std::to_string(int(100*p.ppm))+ std::string(".txt");
-            dataOut.open(path, std::ios_base::out |std::ios_base::binary);
-
-            dataOut << std::setw(5) << p.popSize << " "
-                    << std::setw(5) << p.pe << " "
-                    << std::setw(5) << p.pm << " "
-                    << std::setw(8) << p.rho_e << std::endl;
-            dataOut.close();
-
-            s.Reset();
-            s.SetParams(p);
-            start = clock();
-            s.TrackEvolution(1, path);
-            s.setDeadlock(5);
-            //s.SimpleTest();
-            s.Evolve();
-            dataOut.open(path, std::ios_base::out | std::ofstream::app | std::ios_base::binary);
-            dataOut << "time: " << std::setw(5) << " " << clock()-start << std::endl;
-            dataOut << "\tend pepm tuning step\n" << std::endl;
-            dataOut.close();
-
-            while(size_t(p.popSize*p.ppm) == size_t(p.popSize*(p.ppm+step)))
-                p.ppm += step;
-            p.ppm += step;
-            p.UpdateFromRate();
-        }
-        while(size_t(p.popSize*p.ppe) == size_t(p.popSize*(p.ppe+step)))
-            p.ppe += step;
-        p.ppe += step;
-        p.ppm = ippm;
-        p.UpdateFromRate();
-    }
-
-}
-
-void RhoeTuner(std::string fileDir, std::string outFile, BRKGAParams p,  std::vector<std::vector<Cell>>* selection, double finalRho_e, double step)
-{
-    srand(time(nullptr));
-    std::ifstream inFile2 (fileDir, std::ios_base::in|std::ios_base::binary);
-    if(!inFile2)
-        throw std::invalid_argument("file del circuito inesistente2");
-
-    std::ofstream dataOut;
-
-    Circuit c(selection);
-    inFile2 >> c;
-    inFile2.close();
-
-    //double ip = p.rho_e;
-    time_t start;
-
-    std::string path = outFile;
-    CircuitSolver s(c, p, 0);
-    while(p.rho_e <= finalRho_e)
-    {
-
-        std::cout << "\tbegin rhoe tuning step" << std::endl;
-        path = outFile + std::string("rhoe") + std::to_string(int(p.rho_e*100)) + std::string(".txt");
-        dataOut.open(path, std::ios_base::out|std::ios_base::binary);
-
-        dataOut << std::setw(5) << p.popSize << " "
-                << std::setw(5) << p.pe << " "
-                << std::setw(5) << p.pm << " "
-                << std::setw(8) << p.rho_e << std::endl;
-        dataOut.close();
-
-
-        s.Reset();
-        s.SetParams(p);
-        start = clock();
-        s.TrackEvolution(1, path);
-        s.setDeadlock(5);
-        s.Evolve();
-
-        dataOut.open(path, std::ios_base::out | std::ofstream::app | std::ios_base::binary);
-        dataOut << "time: " << std::setw(5) << " " << clock()-start << std::endl;
-        std::cout << "\tend rhoe tuning step\n" << std::endl;
-        p.rho_e += step;
-        dataOut.close();
-    }
-
-}
-
-
-
-int main(int argc, char *argv[])
-{
-    srand(time(nullptr));
-    int opt;
-
-
-    const char *shortOpts = ":c:l:f:p:e:m:r:g:t:d:a";
-    const int minOpts = 14;
-    std::string circuitPath("../../../files/InputFiles/Circuits/adder16.vhdl");
-    std::string celllibPath("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs");
-    std::string outFilePath;
-    BRKGAParams p(100, 50, 20, 30, 0.7);
-    size_t maxgens = 0;
-    size_t deadlock = 0;
-    double delaygoal = 0;
-    CriteriaPolicy policy = CriteriaPolicy::OrPolicy;
-    if(argc > 1)
-    {
-        while((opt = getopt(argc, argv, shortOpts)) != -1)
-        {
-            switch(opt)
-            {
-            case 'c':
-                circuitPath = optarg;
-                break;
-            case 'l':
-                celllibPath = optarg;
-                break;
-            case 'f':
-                outFilePath = optarg;
-                if(outFilePath == ".")
-                    outFilePath = "";
-                break;
-            case 'p':
-                p.popSize = std::stoi(optarg);
-                break;
-            case 'e':
-                p.pe = std::stoi(optarg);
-                break;
-            case 'm':
-                p.pm = std::stoi(optarg);
-                break;
-            case 'r':
-                p.rho_e = std::stod(optarg);
-                break;
-            case 'g':
-                maxgens = std::stoul(optarg);
-                break;
-            case 'd':
-                deadlock = std::stoul(optarg);
-                break;
-            case 't':
-                delaygoal = std::stod(optarg);
-                break;
-            case 'a':
-                policy = CriteriaPolicy::AndPolicy;
-                break;
-            case ':':
-                std::cerr << "Missing argument" << std::endl;
-                return 1;
-                break;
-            default:
-                std::cerr << "Unexpected option" << std::endl;
-                return 2;
-            }
-        }
-        if(optind < minOpts)
-        {
-            std::cerr << "Missing options" << std::endl;
-            return 1;
-        }
-
-        std::cout << std::endl;
-        std::cout << "circuit path: " << circuitPath << std::endl;
-        std::cout << "celllib path: " << celllibPath << std::endl;
-        std::cout << "outFile path: " << outFilePath << std::endl;
-        std::cout << p << std::endl;
-    }
-    else
-    {
-        maxgens = 30;
-        deadlock = 3;
-        delaygoal = 3.52;
-        policy = CriteriaPolicy::AndPolicy;
-    }
-
-    // ***************************** Lettura files **********************************
-    std::vector<std::vector<Cell>> cells = readCellLibrary(celllibPath);
-    std::cout << "cells initilized" << std::endl;
-
-    std::ifstream circuitFile(circuitPath, std::ios_base::in|std::ios_base::binary);
-    if(!circuitFile)
-    {
-        throw std::invalid_argument("file del circuito inesistente");
-    }
-    Circuit c(&cells);
-    circuitFile >> c;
-    circuitFile.close();
-    std::cout << "circuit initialized" << std::endl;
-    // ******************************************************************************
-
-    if(maxgens + delaygoal + deadlock == 0.0)
-        std::cout << "WARNING: Algorithm won't stop" << std::endl;
-
-    p.nAlleles = c.GetNumOfCells();
-    p.UpdateFromPop();
-    CircuitSolver s(c, p, 1);
-
-    std::cout << maxgens << " " << delaygoal << " " << deadlock << std::endl;
-
-    s.setDeadlock(deadlock);
-    s.setMaxGens(maxgens);
-    s.setDelayGoal(delaygoal);
-    s.setCriteriaPolicy(policy);
-    s.TrackEvolution(1, outFilePath);
-    s.Evolve();
-    //std::cout << "best solution" << s.BestFitness() << std::endl;
-
-
-    std::cout << "fine main" << std::endl;
-    return 0;
-}
-
-
-
-
-
-
 
 
 
@@ -432,3 +356,5 @@ int main(int argc, char *argv[])
 //        i.join();
 
 //}
+
+

@@ -13,10 +13,6 @@
 //  indices and object pointers inside a map in order to uniquely identify each
 //  object inside the data structure with a pointer that it's also used
 //  outside this class.
-//  This template contains and array of pointers (in advanced c++ should be shared_ptrs,
-//  in this template i wouldn't use smart pointers because of their computational
-//  overhead, and also maybe because i probably don't actually understand the real
-//  benefits that they provide).
 //  These pointers identify the object inside and outside the template, so every
 //  operation is referred to a pointer.
 //  To avoid the O(n) cost to find the pointer position in the vector, an unordered_map
@@ -26,20 +22,20 @@
 //  and also can take a custom comp function which will be used to order the heap
 //  *****************************************************************************
 
-
 template<class T, class K> class BinHeap;
 
 template <class T, class K>
 class BinHeapNode
 {
 public:
-    BinHeapNode(T item = T(), K key = K()):item(item), key(key) {/*std::cout << "BinHeapNode constructor" << std::endl;*/}
-    ~BinHeapNode(){/*std::cout << "BinHeapNode destructor" << std::endl;*/}
+    BinHeapNode(T item = T(), K key = K()):item(item), key(key) {}
+    ~BinHeapNode(){}
+/*
     K getKey() const {return key;}
     void setKey(const K &value) {key = value;}
-
     T getItem() const {return item;}
     void setItem(const T &value) {item = value;}
+*/
 
 private:
     friend class BinHeap<T,K>;
@@ -52,42 +48,35 @@ template <class T, class K>
 class BinHeap
 {
 public:
-    BinHeap(int reserve = 12, const std::function<bool(K, K)>& compare = [](K k1, K k2){return k1 > k2;});
+    BinHeap(int reserve = 10, const std::function<bool(K, K)>& compare = [](K k1, K k2)
+    {return k1 > k2;});
 
     std::pair<T,K> Pop();
     bool DecreaseKey(BinHeapNode<T,K>* n, K newKey);
     bool IncreaseKey(BinHeapNode<T,K>* n, K newKey);
     bool Empty() const {return vect.size() == 0;}
-    bool Contains(BinHeapNode<T,K>* n);
+    bool Contains(BinHeapNode<T,K>* n) const;
     bool DeleteElement(BinHeapNode<T,K>* n);
 
-
-    std::pair<T,K> Front();    
-    BinHeapNode<T,K>* Push(T item, K key);
+    std::pair<T,K> Front() const;
+    BinHeapNode<T,K>* Push(const T& item, K key);
 
     bool CheckCollisions();
-
     void SetCompare(const std::function<bool(K, K)> &value);
 
     inline static const std::function<bool(K, K)> minHeap = [](K k1, K k2){return k1 > k2;};
     inline static const std::function<bool(K, K)> maxHeap = [](K k1, K k2){return k1 < k2;};
-    std::vector<BinHeapNode<T,K>*> vect;
+
 private:
-    // to get index of parent of node at index i
-    int parent(int i) { return (i-1)/2; }
-
-    // to get index of left child of node at index i
-    int left(int i) { return (2*i + 1); }
-
-    // to get index of right child of node at index i
-    int right(int i) { return (2*i + 2); }
+    int parent(int i) const  { return (i-1)/2; }
+    int left(int i) const { return (2*i + 1); }
+    int right(int i) const { return (2*i + 2); }
     void Heapify(size_t i);
 
     bool Comparator();
     std::function<bool(K, K)> compare;
-
+    std::vector<BinHeapNode<T,K>*> vect;
     std::unordered_map<BinHeapNode<T,K>*, int> pos;
-
 };
 #endif // BINARYHEAP_H
 
@@ -116,7 +105,7 @@ std::pair<T,K> BinHeap<T,K>::Pop()
 
 
 template<class T, class K>
-BinHeapNode<T, K> *BinHeap<T, K>::Push(T item, K key)
+BinHeapNode<T, K> *BinHeap<T, K>::Push(const T &item, K key)
 {
     vect.emplace_back(new BinHeapNode<T,K>(item, key));
     int i = vect.size()-1;
@@ -207,13 +196,13 @@ bool BinHeap<T,K>::IncreaseKey(BinHeapNode<T, K> *n, K newKey)
 }
 
 template<class T, class K>
-bool BinHeap<T,K>::Contains(BinHeapNode<T, K> *n)
+bool BinHeap<T,K>::Contains(BinHeapNode<T, K> *n) const
 {
     return pos.find(n) != pos.end();
 }
 
 template<class T, class K>
-std::pair<T, K> BinHeap<T,K>::Front()
+std::pair<T, K> BinHeap<T,K>::Front() const
 {
     return std::make_pair(vect[0]->item, vect[0]->key);
 }

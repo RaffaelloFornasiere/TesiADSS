@@ -23,4 +23,3 @@ HEADERS += \
     ../../../lib/CircuitGraphInterface/circuitgraphinterface.h \
     ../../../lib/CircuitSolver/circuitsolver.h \
     ../../../lib/Graph/graph.h \
-    ../../../lib/SingletonMutex/mutex.h

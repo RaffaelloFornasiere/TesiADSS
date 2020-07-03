@@ -12,8 +12,6 @@ class CircuitGraph;
 enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
 
 
-
-
 // *************************************************************************************
 // This class represent a node of the circuit. Each cell of the circuit is formed by
 // a number of circuit nodes equal to the number of inputs plus the number of outputs.
@@ -21,6 +19,8 @@ enum class ParamType {CellRise, CellFall, FallTransition, RiseTransition};
 // This class is the abstract class which is used by the solver. The following two classes
 // inherit form this one and specialize the member methods to calcualte the delays
 // *************************************************************************************
+
+
 class CircuitNode : public GraphNode<double>
 {
     friend std::ostream& operator<<(std::ostream& os, const CircuitNode& cn);
@@ -31,37 +31,35 @@ public:
     {worstInRTransit = 0; worstOutRTransit = 0;}
 
     CircuitNode(CircuitGraph* it, const std::string& name)
-        : GraphNode<double>(name), it(it)
-    {worstInRTransit = 0; worstOutRTransit = 0;}
+        : CircuitNode(it, 0, name)
+    {}
+
+    CircuitNode(const CircuitNode& c)
+        : CircuitNode(c.it, c.outCapacity, c.name)
+    {}
+
     virtual ~CircuitNode() override {adj.clear();}
 
     CircuitNode& operator=(const CircuitNode& c) = delete;
 
     virtual double Distance(GraphNode* a) override;
 
+    virtual void CalcOutputCap() = 0;
+    virtual double GetWorstDelay() = 0;
+    virtual double GetWorstTransition() = 0;
+
     std::string getName() const {return name;}
-
     void SetInTransition(double value) {if(value > worstInRTransit) worstInRTransit = value;}
-
     void SetCapacity(double value) {outCapacity = value;}
 
-    //void AddNeighbor(GraphNode<double> *a) override;
-    virtual void CalcOutputCap() = 0;
-
-    virtual double GetWorstDelay() = 0; //{return delay;}
-    virtual double GetWorstTransition() = 0; //{return worstOutRTransit;}
 
 protected:
     CircuitGraph* it;
     double worstInRTransit;
     double worstOutRTransit;
     double delay;
-
     double outCapacity;
 };
-
-
-
 
 class InputCircuitNode : public CircuitNode
 {
@@ -70,6 +68,7 @@ public:
         : CircuitNode(it, capacity, name) {}
     InputCircuitNode(CircuitGraph* it, const std::string &name)
         : CircuitNode(it, name){}
+
     ~InputCircuitNode() override {}
 
     double GetWorstDelay() override {return 0;}
@@ -87,7 +86,11 @@ public:
         : CircuitNode(it, capacity, name)
     {delayUpdated = transitionUpdated = false;}
     OutputCircuitNode(CircuitGraph* it, const std::string& name)
-        : CircuitNode(it, name){}
+        : CircuitNode(it, name)
+    {delayUpdated = transitionUpdated = false;}
+    OutputCircuitNode(const OutputCircuitNode& o)
+        : CircuitNode(o)
+    {delayUpdated = transitionUpdated = 0;}
     ~OutputCircuitNode() override {}
 
     double GetWorstDelay() override;
@@ -118,6 +121,9 @@ private:
 // ************************************************************************************
 
 
+
+
+
 class CircuitGraph : public Graph<double>
 {
     friend std::ostream& operator<<(std::ostream& os, const CircuitGraph& cg);
@@ -125,7 +131,7 @@ class CircuitGraph : public Graph<double>
 
 
 public:
-    CircuitGraph(const Circuit &c, bool init = 0);
+    CircuitGraph(const Circuit &c);
     ~CircuitGraph();
 
     // circuit
@@ -135,6 +141,7 @@ public:
     std::pair<const Cell*, int> GetCell(CircuitNode *n) const;
     double GetAreaOccupation() {return circuit.GetAreaOccupation();}
 
+    size_t GetNumOfNodes() const {return map2.size();}
 
 
 private:
@@ -147,7 +154,6 @@ private:
     std::unordered_map<CircuitNode*, std::pair<const Cell*, int>>  map1;
     std::unordered_map<const Cell*, std::vector<CircuitNode*>> map2;
     const Circuit& circuit;
-
 };
 
 #endif // CIRCUITGRAPHINTERFACE_H

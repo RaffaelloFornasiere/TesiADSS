@@ -1,6 +1,23 @@
 #include "circuitsolver.h"
 
 
+
+CircuitSolver::CircuitSolver(const CircuitInput &input, const BRKGAParams &params)
+    : BRKGA<CircuitInput, CircuitOutput, double>(input, params)
+{
+    deadlock = 0;
+    maxGens = 0;
+    fitGoal = 0;
+    fitnessExp = 3;
+    counter = 0;
+    lastBest = 0;
+    k = 100;
+    lastTimeRec = clock();
+
+    output.getWorstPathDistance();
+}
+
+
 size_t CircuitSolver::getDeadlock() const
 {
     return deadlock;
@@ -43,7 +60,7 @@ void CircuitSolver::_Reset()
 
 bool CircuitSolver::IsDeadlockCritReached()
 {
-    if(fitVect.front().first > lastBest)
+    if(fitVect.front().first <= lastBest)
         counter++;
     else
     {
@@ -88,21 +105,18 @@ void CircuitSolver::setCriteriaPolicy(const CriteriaPolicy &value)
 }
 
 
-
 void CircuitSolver::Decode()
 {
-    //for each element inside the fitvect i'll take
-
+   // output.getWorstPathDistance();
     for(auto& item : fitVect)
     {
         //time_t start = clock();
         std::vector<double> alleles = hypercube[item.second];
-
         output.SetAllCells(alleles);
+
         output.SetupCaps();
-
+        //double area = output.GetAreaOccupation();
         item.first = f(output.getWorstPathDistance());
-
     }
 }
 
@@ -111,21 +125,37 @@ bool CircuitSolver::StopCriteria()
 {
     if(tracking)
     {
+        std::string s = "d: " + std::to_string(f_1(fitVect.front().first));
+        output.SetAllCells(hypercube[fitVect.front().second]);
+        double area = output.GetAreaOccupation();
+        s += " a: " + std::to_string(area);
+        if(timeTracking)
+        {
+            double secs = double(clock() - lastTimeRec)/CLOCKS_PER_SEC;
+            s += " t: " + std::to_string(secs);
+        }
+
+
         if(dataOut.is_open())
-            dataOut << f_1(fitVect.front().first) << std::endl;
+            dataOut << s << std::endl;
         else
-            std::cout << f_1(fitVect.front().first) << std::endl;
+            std::cout << s << std::endl;
     }
 
     if(criteriaPolicy == CriteriaPolicy::OrPolicy)
+    {
+
         return  ((fitGoal == 0)?0:IsDelayCritReached())
                 || ((maxGens == 0)?0:IsMaxGensCritReached())
                 || ((deadlock == 0)?0:IsDeadlockCritReached());
-
+    }
     else
-        return  ((fitGoal == 0)?1:IsDelayCritReached())
+    {
+        bool b = ((fitGoal == 0)?1:IsDelayCritReached())
                 && ((maxGens == 0)?1:IsMaxGensCritReached())
                 && ((deadlock == 0)?1:IsDeadlockCritReached());
+        return b&&((fitGoal + maxGens + deadlock) != 0);
+    }
 }
 
 
@@ -134,8 +164,9 @@ double CircuitSolver::BestFitness() const
     return f_1(fitVect.front().first);
 }
 
-void CircuitSolver::TrackEvolution(bool track, const std::string &fileName)
+void CircuitSolver::TrackEvolution(bool track, const std::string &fileName, bool timeTracking)
 {
+    this->timeTracking = timeTracking;
     if(dataOut.is_open())
         dataOut.close();
     if((tracking = track))

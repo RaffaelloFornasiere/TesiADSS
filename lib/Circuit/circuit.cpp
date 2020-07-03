@@ -6,14 +6,19 @@
 
 std::ostream& operator<<(std::ostream &os, const Circuit &c)
 {
+    for(size_t i = 0; i < c.inputLists.size(); i++)
+    {
+        c.inputLists[i].first->setId("id:"+std::to_string(i)+"_");
+    }
+
     for(auto& x : c.adjList)
     {
-        os << "\"" << x.first.getName() << "(" << x.first.getType() << ")" << "\"";
+        os << "\"" << x.first.getName() << "_" << x.first.getId() << "(" << x.first.getType() << ")" << "\"";
         for(auto& y : x.second)
         {
             if(y->getType() != "")
                 os// <<"\"" << x.first.name << "(" << x.first.type << ")" << "\""
-                        << "->" << "\""<< y->getName() << "(" << y->getType() << ")" << "\"";
+                        << "->" << "\""<< y->getName() << "_" << y->getId() << "(" << y->getType() << ")" << "\"";
             //<<std::endl;
 
         }
@@ -41,6 +46,7 @@ std::istream& operator>>(std::istream &is, Circuit &c)
         else if(std::regex_match(aux, pattern2))
             c.readInstruction3(aux);
     }
+
 
 
     return is;
@@ -500,8 +506,11 @@ bool Circuit::ChangeCell(size_t i, double p) const
 
     if(it2->size() != 0)
     {
+        if(p > 1 || p < 0)
+            throw std::invalid_argument("cell indicator must be between 0 and 1");
+
         size_t cell = static_cast<size_t>(p*(it2->size()-1));
-        if((*it) != (*it2)[cell])
+        if((*it).name != (*it2)[cell].name)
         {
             (*it).CopyParams(&(*it2)[cell]);
             return true;

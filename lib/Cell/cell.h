@@ -59,12 +59,12 @@ public:
 
 
     double GetDelay (double inputTransition, double outCapacitance) const;
+    double GetDelay2 (double inputTransition, double outCapacitance) const;
 
     // *********************SETTERS AND GETTERS**********************************
     void setInfoType(const std::string &value){infoType = value;}
     std::string getInfoType() const {return infoType;}
     // **************************************************************************
-
 
     // *******************TEST FUNCTION OF DELAY CALCULATION*********************
     void Test();
@@ -95,10 +95,10 @@ private:
 //  this cell peforms a special copy that keeps unchanged some informations that
 //  are used to construct and check the topology of the circuit
 //  *****************************************************************************
+
 class Cell
 {    
     friend class Circuit;
-
     friend std::istream& operator>>(std::istream& is, Cell& c);
     friend std::ostream& operator<<(std::ostream& os, const Cell& c);
     friend bool operator==(const Cell& c1, const Cell& c2){return c1.name == c2.name;}
@@ -110,7 +110,6 @@ public:
     // *********************SETTERS AND GETTERS**********************************
     std::string getName() const {return name;}
     void setName(const std::string &value){name = value;}
-
     std::string getType() const{return type;}
     void setType(const std::string &value){type = value;}
     // **************************************************************************
@@ -122,23 +121,12 @@ public:
     double GetInPinCapacity(int i) const {return input[i].capacity;}
     double GetOutPinCapacity(int i) const {return  output[i].capacity;}
     double GetTimingInfo(double intransit, double outCap, size_t output, size_t type) const;
-
-
     size_t GetNumOfInputs() const {return input.size();}
     size_t GetNumOfOutputs() const {return output.size();}
-
     std::string GetInputName(int i) const {return input[i].name;}
     std::string GetOutputName(int i) const {return output[i].name;}
-
-
     double getArea() const {return area;}
     // **************************************************************************
-
-
-    //
-    void TestTimingInfo(){timingInfo[0][0].Test();}
-    //
-
 
     // *********************CONST PUBLIC ATTRIBUTES******************************
     static const size_t cell_fall = 0;
@@ -147,17 +135,18 @@ public:
     static const size_t rise_transition = 3;
     // **************************************************************************
 
+    void setId(const std::string &value);
+    std::string getId() const;
+    void TestTimingInfo(){timingInfo[0][0].Test();}
 
 private:
     std::string name;
     std::string type;
-
+    std::string id;
     double area;
-
+    std::vector<std::vector<CellTimingInfo>> timingInfo;
     std::vector<Pin> input;
     std::vector<Pin> output;
-
-    std::vector<std::vector<CellTimingInfo>> timingInfo;
 };
 
 

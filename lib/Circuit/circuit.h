@@ -30,6 +30,7 @@
 //  the cells of the same type of the one received as input
 //  *****************************************************************************
 
+
 class Circuit
 {
     friend std::istream& operator>>(std::istream& is, Circuit& c);
@@ -39,16 +40,9 @@ class Circuit
 
 
 public:
-
     Circuit(const std::vector<std::vector<Cell>> *selection)
         : cellSelection(selection)
-    {}
-
-    Circuit(const std::vector<std::vector<Cell>> *selection, std::istream& is)
-        : cellSelection(selection)
-    {
-        is >> *this;
-    }
+    {id = rand();}
 
     void AssignRandom();
     void AssignAll(double p) const;
@@ -71,12 +65,11 @@ public:
 
 
 private:
+    size_t id;
     mutable std::list<std::pair<Cell, std::vector<Cell*>>> adjList;
     std::vector<std::pair<Cell*, std::vector<Cell*>>> inputLists;
 
     const std::vector<std::vector<Cell>>* cellSelection;
-
-
 
     bool readInstruction1(std::string line);
     bool readInstruction2(std::string line);

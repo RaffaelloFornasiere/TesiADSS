@@ -18,7 +18,6 @@ private:
            << " - pop_mut: " << bp.pm
            << " - pop_nonelite: " << bp.pne
            << " - rho_e: " << bp.rho_e;
-           //<< " - reducing : " << std::boolalpha << bp.reducing;
         return os;
     }
 
@@ -27,8 +26,6 @@ public:
         : popSize(popSize), nAlleles(nAlleles), pe(pe), pne(popSize - pe -pm), pm(pm), rho_e(rho_e) //, reducing(reducing)
     {}
     BRKGAParams(){Reset();}
-
-
 
     void UpdateFromRate()
     {
@@ -43,7 +40,6 @@ public:
         ppm = double(pm)/popSize;
         pne = popSize-pe-pm;
     }
-
 
     void Reset()
     {
@@ -62,89 +58,82 @@ typedef std::vector<double> DNA;
 
 
 
-
 template<class Input, class Output, class FType>
 class BRKGA
 {
 public:
-    BRKGA(const Input& input):input(input){}
+    BRKGA(const Input& input):input(input), output(input){ bias = -1;}
     BRKGA(const Input& input, const BRKGAParams &p);
     BRKGA(const Input& input, size_t popSize, size_t nAlleles, size_t pe, size_t pm, double rho_e);
     virtual ~BRKGA(){}
 
-    //Output BestSolution();
+    // ******************** User Interaction Members *******************/
     bool Evolve();
-    virtual void Decode() = 0;
-    virtual bool StopCriteria() = 0;
-    //virtual double Percentile() = 0;
     virtual FType BestFitness() const {return fitVect.front().first;}
-
-    size_t PopSize() const {return p.popSize;}
-
-    void SimpleTest();
+    void SimpleTest();  // performs only one cycle of evolution
     void SetParams(const BRKGAParams &p);
     void Reset();
+    size_t PopSize() const {return p.popSize;}
+    // ******************************************************************
 
+    double getBias() const;
+    void setBias(double value);
 
 protected:
-    virtual void _Reset() = 0;
+    // *************************** Hotspots  *****************************************
+    virtual void _Reset() = 0;     //called by Reset(). Reset derived class data
+    virtual void Decode() = 0;
+    virtual bool StopCriteria() = 0;
+    // *******************************************************************************
 
     void InitializePopulation();
     void Classify();
 
-
-    const Input& input;
+    // ********** Algorithm data **************
     std::vector<DNA> hypercube;
     std::vector<std::pair<FType, size_t>> fitVect;
 
     BRKGAParams p;
     size_t generations;
+    // ****************************************
 
+    double bias;
 
+    const Input& input;
+    Output output;
 };
-
-
-
 
 template<class Input, class Output, class FType>
 BRKGA<Input, Output, FType>::BRKGA(const Input &input, const BRKGAParams& p)
-    : input(input), hypercube(p.popSize, DNA(p.nAlleles)),
-      fitVect(p.popSize), p(p.popSize, p.nAlleles, p.pe, p.pm, p.rho_e)
+    : hypercube(p.popSize, DNA(p.nAlleles)), fitVect(p.popSize),
+      p(p.popSize, p.nAlleles, p.pe, p.pm, p.rho_e), input(input),  output(input)
 {
-    //std::cout << "rand max: " << RAND_MAX << std::endl;
     for(size_t i = 0; i < p.popSize; i++)
     {
         fitVect[i].second = i;
     }
+    bias = -1;
 }
-
-
 
 template<class Input, class Output, class FType>
 BRKGA<Input, Output, FType>::BRKGA(const Input &input, size_t popSize, size_t nAlleles, size_t pe, size_t pm, double rho_e)
     :BRKGA(input, BRKGAParams(popSize, nAlleles, pe, pm, rho_e))
 {}
 
-
 template<class Input, class Output, class FType>
 bool BRKGA<Input, Output, FType>::Evolve()
 {
     //    std::cout << "\tEvolvePopulation" << std::endl;
-
     InitializePopulation();
     //    std::cout << "\tpopulation initialized" << std::endl;
-
     Decode();
     //    std::cout << "\tpopulation decoded" << std::endl;
-
     Classify();
     //    std::cout << "\tpopulation classified" << std::endl;
-
     generations = 0;
     std::vector<DNA> aux(p.pne, DNA(p.nAlleles));
 
-
-    std::cout << "ready to entry while" << std::endl;
+    //std::cout << "ready to entry while" << std::endl;
     while(!StopCriteria())
     {
         for(size_t i = 0; i < p.pne; ++i)
@@ -217,11 +206,11 @@ void BRKGA<Input, Output, FType>::SetParams(const BRKGAParams& p)
 template<class Input, class Output, class FType>
 void BRKGA<Input, Output, FType>::Reset()
 {
+    _Reset();
     fitVect.clear();
     hypercube.clear();
     generations = 0;
     p.Reset();
-    _Reset();
 }
 
 template<class Input, class Output, class FType>
@@ -229,7 +218,10 @@ void BRKGA<Input, Output, FType>::InitializePopulation()
 {
     for(auto& y : hypercube)
         for(auto& x : y)
-            x = static_cast<double>(rand())/RAND_MAX;
+            if(bias < 0)
+                x = static_cast<double>(rand())/RAND_MAX;
+            else
+                x = bias;
 
 }
 
@@ -245,37 +237,17 @@ void BRKGA<Input, Output, FType>::Classify()
 }
 
 
+template<class Input, class Output, class FType>
+double BRKGA<Input, Output, FType>::getBias() const
+{
+    return bias;
+}
 
-
-/* double percentile = Percentile();
- if(reducing && percentile > 0.5 && percentile > lastPercentile)
- {
-//            std::cout << "resizing...\t " << std::endl;
-     double pReducing = (percentile-lastPercentile)/100.0;
-     lastPercentile = percentile;
-     popSize = static_cast<size_t>((1-pReducing)*popSize);
-     pe = ppe*popSize;
-     pm = ppm*popSize;
-     if(pne < popSize - pe - pm)
-         pe++;
-     pne = popSize - pe - pm;
-
-     if(pne < minSize)
-     {
-         pne = minSize-pm-pe;
-         reducing = false;
-         fitVect.resize(minSize);
-         //fitVect.erase(fitVect.end()-minSize,  fitVect.end());
-     }
-     else
-     {
-         size_t rubbish = fitVect.size() - popSize;
-         fitVect.erase(fitVect.end() - rubbish, fitVect.end());
-     }
-     aux.resize(pne, std::vector<double>(nAlleles));
-     std::cout << " pop size: " << popSize
-               << " pe: " << pe
-               << " pm: " << pm
-               << " pne: " << pne << " ";
- }*/
-
+template<class Input, class Output, class FType>
+void BRKGA<Input, Output, FType>::setBias(double value)
+{
+    if(value > 1.000001 || value < -0.00000001)
+        bias = -1.0;
+    else
+        bias = value;
+}

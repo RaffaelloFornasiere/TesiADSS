@@ -10,11 +10,11 @@ int main()
 {  
 
 
-    std::ifstream inFile ("../../../files/InputFiles/Cell_Libraries/cell_library.hs", std::ios_base::in|std::ios_base::binary);
+    std::ifstream inFile ("../../../files/InputFiles/Cell_Libraries/cell_library.ll", std::ios_base::in|std::ios_base::binary);
     if(!inFile)
         throw std::invalid_argument("file inesistente");
 
-    std::ofstream outFile ("../../../files/InputFiles/Cell_Libraries/my_cell_library.hs",  std::ios_base::out|std::ios_base::binary);
+    std::ofstream outFile ("../../../files/InputFiles/Cell_Libraries/my_cell_library.ll",  std::ios_base::out|std::ios_base::binary);
 
     Cell c;
     std::vector<Cell> cells;

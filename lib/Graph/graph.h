@@ -18,32 +18,30 @@ template <class M > class Graph;
 //  The interface is not fully featured yet.
 //  ***********************************************************************************************************
 
+
 template <class M>
 class GraphNode
 {
     friend bool operator==(const GraphNode& a, const GraphNode& b) { return a.item == b.item; }
-
     template<class N>
     friend std::ostream& operator<<(std::ostream& os, const GraphNode<N>& gn);
 
     friend class Graph<M>;
 
 public:
-    GraphNode(std::string name = ""):name(name){/*std::cout << "GraphNode constructor" << std::endl;*/}
-    virtual ~GraphNode(){/*std::cout << "GraphNode destructor" << std::endl;*/}
-    virtual M Distance(GraphNode* a) = 0;//{return adj.size();}
+    GraphNode(const std::string& name = ""):name(name){}
+    virtual ~GraphNode(){}
+    virtual M Distance(GraphNode* a) = 0;
     std::string getName() const {return name;}
     virtual void AddNeighbor(GraphNode* a){adj.push_back(a);}
-    std::string name;
-    std::vector<GraphNode*> adj;
 
 protected:
-
+    std::string name;
+    std::vector<GraphNode*> adj;
 
 private:
     BinHeapNode<GraphNode*, M>* heapPtr;
 };
-
 
 template <class M>
 class Graph
@@ -57,22 +55,19 @@ public:
 
     // **********************************************************************
     void TopologicalSort();
-    M getWorstPathDistance();
-    //M OrderAndGetWorstDistance();
+    M getWorstPathDistance() const;
 
-    //virtual void AddNode(GraphNode<M>*a) {adjList.push_back(a);}
     virtual void DeleteNode(int i);
 
-    //size_t NumNodes()const {return adjList.size();}
     GraphNode<M>* getNode(int node);
     // **********************************************************************
-
-
 
 protected:
     std::vector<GraphNode<M>*> adjList;
     std::vector<GraphNode<M>*> sorted;
 };
+
+
 
 template<class M>
 std::ostream& operator<<(std::ostream &os, const Graph<M> &g)
@@ -146,9 +141,10 @@ void Graph<M>::TopologicalSort()
 }
 
 template< class M>
-M Graph<M>::getWorstPathDistance()
+M Graph<M>::getWorstPathDistance() const
 {
     std::unordered_map<GraphNode<M>*, M> distances;
+
 
     for(GraphNode<M>* x : sorted)
     {
@@ -160,16 +156,13 @@ M Graph<M>::getWorstPathDistance()
         }
     }
 
-    M max(0);
 
+    M max(0);
     for(auto i : distances)
     {
         if(max < i.second)
-        {
             max = i.second;
-        }
     }
-
     return max;
 }
 
