@@ -1,0 +1,2 @@
+C:\Users\raffa\Documents\uni\TesiADSS\Codici\ADSS\test\NSGACuda\x64\Debug\NSGACuda.exe
+C:\Users\raffa\Documents\uni\TesiADSS\Codici\ADSS\test\NSGACuda\x64\Debug\NSGACuda.pdb
