@@ -1,7 +1,7 @@
 # Progetto ADSS
 
 # All'interno della cartella "docs" è presente la relazione del progetto e la descrizione del 
-funzionamento del risolutore. 
+# funzionamento del risolutore. 
 
 # Versione leggera (senza plotter)
  - aprire la directory src\Solver\CircuitSolver
